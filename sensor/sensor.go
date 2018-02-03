@@ -66,7 +66,7 @@ func (m *Sensor) Read() (*Measurement, error) {
 				p = pulse.FixPulses(p)
 				log.Println(p)
 
-				return m.decode(p.Pulses), nil
+				return m.decode(mapPulse(p.Pulses)), nil
 			}
 		}
 		fmt.Println(scanner.Text())
