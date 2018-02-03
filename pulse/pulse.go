@@ -7,6 +7,10 @@ import (
 
 	"sort"
 
+	"fmt"
+
+	"math"
+
 	"github.com/bradfitz/slice"
 )
 
@@ -45,38 +49,43 @@ func sortCompressedPulses(pulseLengths []int, pulses string) *PulseInfo {
 	}
 }
 
-//func fixPulses(pulseLengths []int, pulses string) PulseInfo {
-//	if len(pulseLengths) <= 3 {
-//		return nil
-//	}
-//
-//	i := 1
-//	for i < len(pulseLengths) {
-//		if pulseLengths[i-1]*2 < pulseLengths[i] {
-//			i++
-//			continue
-//		}
-//		newPulseLength := math.Floor(float64(pulseLengths[i-1]+pulseLengths[i]) / 2)
-//		newPulseLengths := make([]int, len(pulseLengths))
-//		newPulseLengths = append(newPulseLengths, pulseLengths)
-//		newPulseLengths = append(newPulseLengths, newPulseLengths[:i-1], newPulseLength, newPulseLengths[i+1:])
-//		break
-//	}
-//
-//	if i == len(pulseLengths) {
-//		return nil
-//	}
-//	newPulses := pulses
-//	for i < len(pulseLengths) {
-//		newPulses = newPulses.replace(new
-//		RegExp(""+i, 'g'), "" + (i - 1))
-//		i++
-//	}
-//	return &PulseInfo{
-//		pulseLengths: newPulseLengths,
-//		pulses:       newPulses,
-//	}
-//}
+func fixPulses(pulseLengths []int, pulses string) *PulseInfo {
+	if len(pulseLengths) <= 3 {
+		return nil
+	}
+
+	i := 1
+	newPulseLengths := pulseLengths
+
+	for i < len(pulseLengths) {
+		if pulseLengths[i-1]*2 < pulseLengths[i] {
+			i++
+			continue
+		}
+
+		newPulseLength := math.Floor(float64(pulseLengths[i-1]+pulseLengths[i]) / 2)
+		newPulseLengths2 := append(newPulseLengths[:i-1], int(newPulseLength))
+		newPulseLengths = append(newPulseLengths2, newPulseLengths[i+1:]...)
+		break
+	}
+
+	if i == len(pulseLengths) {
+		return nil
+	}
+	newPulses := pulses
+
+	for i < len(pulseLengths) {
+		newPulses = strings.Replace(newPulses,
+			strconv.FormatUint(uint64(i), 10),
+			strconv.FormatUint(uint64(i-1), 10),
+			-1)
+		i++
+	}
+	return &PulseInfo{
+		pulseLengths: newPulseLengths,
+		pulses:       newPulses,
+	}
+}
 
 func sortIndices(array []int) []int {
 	tuples := make([]Tuple, len(array))
@@ -106,7 +115,7 @@ func mapByArray(data string, mapping []int) string {
 			log.Fatal(err)
 		}
 
-		result += string(mapping[i])
+		result = fmt.Sprintf("%s%d", result, mapping[i])
 		d++
 	}
 	return result
