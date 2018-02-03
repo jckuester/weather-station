@@ -1,7 +1,6 @@
 package sensor
 
 import (
-	"log"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -13,7 +12,6 @@ func TestMapPulse(t *testing.T) {
 
 	assert.Equal(t, mapPulse(pulse), bits)
 	//"RF receive 512 4152 2124 9112 0 0 0 0 0102020101020201020101020202010202020202010102020201010202010202020102020103"
-	log.Println(mapPulse("0201010202010102010101010102010101010101020202010101020101020101010102010203"))
 }
 
 func TestDecode(t *testing.T) {

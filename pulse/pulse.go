@@ -15,8 +15,8 @@ import (
 )
 
 type PulseInfo struct {
-	pulseLengths []int
-	pulses       string
+	Lengths []int
+	Pulses  string
 }
 
 type Tuple struct {
@@ -24,7 +24,7 @@ type Tuple struct {
 	second int
 }
 
-func prepareCompressedPulses(input string) *PulseInfo {
+func PrepareCompressedPulses(input string) *PulseInfo {
 	parts := strings.Split(input, " ")
 	pulseLengths := parts[:8]
 	pulses := parts[8]
@@ -49,32 +49,32 @@ func sortCompressedPulses(pulseLengths []int, pulses string) *PulseInfo {
 	}
 }
 
-func fixPulses(pulseLengths []int, pulses string) *PulseInfo {
-	if len(pulseLengths) <= 3 {
+func FixPulses(p *PulseInfo) *PulseInfo {
+	if len(p.Lengths) <= 3 {
 		return nil
 	}
 
 	i := 1
-	newPulseLengths := pulseLengths
+	newPulseLengths := p.Lengths
 
-	for i < len(pulseLengths) {
-		if pulseLengths[i-1]*2 < pulseLengths[i] {
+	for i < len(p.Lengths) {
+		if p.Lengths[i-1]*2 < p.Lengths[i] {
 			i++
 			continue
 		}
 
-		newPulseLength := math.Floor(float64(pulseLengths[i-1]+pulseLengths[i]) / 2)
+		newPulseLength := math.Floor(float64(p.Lengths[i-1]+p.Lengths[i]) / 2)
 		newPulseLengths2 := append(newPulseLengths[:i-1], int(newPulseLength))
 		newPulseLengths = append(newPulseLengths2, newPulseLengths[i+1:]...)
 		break
 	}
 
-	if i == len(pulseLengths) {
+	if i == len(p.Lengths) {
 		return nil
 	}
-	newPulses := pulses
+	newPulses := p.Pulses
 
-	for i < len(pulseLengths) {
+	for i < len(p.Lengths) {
 		newPulses = strings.Replace(newPulses,
 			strconv.FormatUint(uint64(i), 10),
 			strconv.FormatUint(uint64(i-1), 10),
@@ -82,8 +82,8 @@ func fixPulses(pulseLengths []int, pulses string) *PulseInfo {
 		i++
 	}
 	return &PulseInfo{
-		pulseLengths: newPulseLengths,
-		pulses:       newPulses,
+		Lengths: newPulseLengths,
+		Pulses:  newPulses,
 	}
 }
 

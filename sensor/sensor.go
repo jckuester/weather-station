@@ -7,6 +7,9 @@ import (
 
 	"strconv"
 
+	"strings"
+
+	"github.com/jckuester/weather-station/pulse"
 	"github.com/pkg/errors"
 )
 
@@ -53,19 +56,24 @@ func (m *Sensor) Read() (*Measurement, error) {
 		return nil, errors.Wrapf(err, "Could not read from: '%v'", m.file.Name())
 	}
 
-	return m.decode(string(result)), nil
+	pulseTrimmed := strings.TrimPrefix("RF receive ", string(result))
+	p := pulse.PrepareCompressedPulses(pulseTrimmed)
+	p = pulse.FixPulses(p)
+
+	return m.decode(p.Pulses), nil
 }
 
 // Decode decodes the pulse received from the "Globaltronics GT-WT-01 variant"
 // and returns the human-readable temperature and humidity. See:
 // https://github.com/pimatic/rfcontroljs/blob/master/src/protocols/weather15.coffee
-func (m *Sensor) decode(data string) *Measurement {
+func (m *Sensor) decode(pulses string) *Measurement {
+
 	return &Measurement{
-		Id:          binaryToNumber(data, 0, 12),
-		Channel:     binaryToNumber(data, 14, 16) + 1,
-		Temperature: float64(binaryToSignedNumber(data, 16, 27)) / 10,
-		Humidity:    binaryToNumber(data, 28, 36),
-		LowBattery:  binaryToBoolean(data, 12),
+		Id:          binaryToNumber(pulses, 0, 12),
+		Channel:     binaryToNumber(pulses, 14, 16) + 1,
+		Temperature: float64(binaryToSignedNumber(pulses, 16, 27)) / 10,
+		Humidity:    binaryToNumber(pulses, 28, 36),
+		LowBattery:  binaryToBoolean(pulses, 12),
 	}
 }
 
