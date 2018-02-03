@@ -54,7 +54,9 @@ func measure() {
 			log.Fatalf("Something went wrong: '%v'", err)
 		}
 
-		temperature.Set(result.Temperature)
-		humidity.Set(float64(result.Humidity))
+		if result != nil {
+			temperature.Set(result.Temperature)
+			humidity.Set(float64(result.Humidity))
+		}
 	}
 }

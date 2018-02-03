@@ -9,6 +9,9 @@ import (
 
 	"strings"
 
+	"bufio"
+	"fmt"
+
 	"github.com/jckuester/weather-station/pulse"
 	"github.com/pkg/errors"
 )
@@ -32,10 +35,9 @@ type Measurement struct {
 func (m *Sensor) Open(name string) (err error) {
 	atomic.StoreInt32(&m.opened, 1)
 
-	m.file, err = os.OpenFile(name, os.O_RDONLY, 0644)
-
-	if err != nil || m.file == nil {
-		return errors.Wrapf(err, "Failed to open '%v'", name)
+	m.file, err = os.Open(name)
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	log.Printf("Device '%v' opened", m.file.Name())
@@ -49,18 +51,32 @@ func (m *Sensor) Read() (*Measurement, error) {
 		return nil, errors.New("Device needs to be opened")
 	}
 
-	result := make([]byte, 8)
+	scanner := bufio.NewScanner(m.file)
+	for scanner.Scan() {
+		line := scanner.Text()
+		log.Println(line)
 
-	_, err := m.file.Read(result)
-	if err != nil {
-		return nil, errors.Wrapf(err, "Could not read from: '%v'", m.file.Name())
+		if strings.HasPrefix(line, "RF receive") {
+			pulseTrimmed := strings.TrimPrefix(line, "RF receive ")
+
+			p := pulse.PrepareCompressedPulses(pulseTrimmed)
+			log.Println(p)
+
+			if p != nil {
+				p = pulse.FixPulses(p)
+				log.Println(p)
+
+				return m.decode(p.Pulses), nil
+			}
+		}
+		fmt.Println(scanner.Text())
 	}
 
-	pulseTrimmed := strings.TrimPrefix("RF receive ", string(result))
-	p := pulse.PrepareCompressedPulses(pulseTrimmed)
-	p = pulse.FixPulses(p)
+	if err := scanner.Err(); err != nil {
+		log.Fatal(err)
+	}
 
-	return m.decode(p.Pulses), nil
+	return nil, nil
 }
 
 // Decode decodes the pulse received from the "Globaltronics GT-WT-01 variant"

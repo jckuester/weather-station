@@ -70,6 +70,7 @@ func FixPulses(p *PulseInfo) *PulseInfo {
 	}
 
 	if i == len(p.Lengths) {
+		log.Println(i)
 		return nil
 	}
 	newPulses := p.Pulses
