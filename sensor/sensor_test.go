@@ -3,6 +3,7 @@ package sensor
 import (
 	"testing"
 
+	"github.com/jckuester/weather-station/pulse"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -11,7 +12,6 @@ func TestMapPulse(t *testing.T) {
 	bits := "10011011000"
 
 	assert.Equal(t, mapPulse(pulse), bits)
-	//"RF receive 512 4152 2124 9112 0 0 0 0 0102020101020201020101020202010202020202010102020201010202010202020102020103"
 }
 
 func TestDecode(t *testing.T) {
@@ -40,4 +40,20 @@ func TestDecode2(t *testing.T) {
 	assert.Equal(t, false, m.LowBattery, "LowBattery")
 	assert.Equal(t, 2, m.Channel, "Channel")
 	assert.Equal(t, 2321, m.Id, "Id")
+}
+
+func TestRead(t *testing.T) {
+	pC := "508 4160 2124 9096 0 0 0 0 0102020101020201020101020202010202020202010102020102010102010202020202020103"
+
+	s := &Sensor{}
+
+	p := pulse.PrepareCompressedPulses(pC)
+	bits := mapPulse(p.Pulses)
+	m := s.decode(bits)
+
+	assert.Equal(t, 64, m.Humidity, "Humidity")
+	assert.Equal(t, 20.3, m.Temperature, "Temperature")
+	assert.Equal(t, false, m.LowBattery, "LowBattery")
+	assert.Equal(t, 3, m.Channel, "Channel")
+	assert.Equal(t, 2454, m.Id, "Id")
 }

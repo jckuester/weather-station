@@ -9,8 +9,6 @@ import (
 
 	"fmt"
 
-	"math"
-
 	"github.com/bradfitz/slice"
 )
 
@@ -46,45 +44,6 @@ func sortCompressedPulses(pulseLengths []int, pulses string) *PulseInfo {
 	return &PulseInfo{
 		pulseLengths,
 		pulses,
-	}
-}
-
-func FixPulses(p *PulseInfo) *PulseInfo {
-	if len(p.Lengths) <= 3 {
-		return nil
-	}
-
-	i := 1
-	newPulseLengths := p.Lengths
-
-	for i < len(p.Lengths) {
-		if p.Lengths[i-1]*2 < p.Lengths[i] {
-			i++
-			continue
-		}
-
-		newPulseLength := math.Floor(float64(p.Lengths[i-1]+p.Lengths[i]) / 2)
-		newPulseLengths2 := append(newPulseLengths[:i-1], int(newPulseLength))
-		newPulseLengths = append(newPulseLengths2, newPulseLengths[i+1:]...)
-		break
-	}
-
-	if i == len(p.Lengths) {
-		log.Println(i)
-		return nil
-	}
-	newPulses := p.Pulses
-
-	for i < len(p.Lengths) {
-		newPulses = strings.Replace(newPulses,
-			strconv.FormatUint(uint64(i), 10),
-			strconv.FormatUint(uint64(i-1), 10),
-			-1)
-		i++
-	}
-	return &PulseInfo{
-		Lengths: newPulseLengths,
-		Pulses:  newPulses,
 	}
 }
 

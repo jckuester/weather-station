@@ -10,7 +10,6 @@ import (
 	"strings"
 
 	"bufio"
-	"fmt"
 
 	"github.com/jckuester/weather-station/pulse"
 	"github.com/pkg/errors"
@@ -63,13 +62,12 @@ func (m *Sensor) Read() (*Measurement, error) {
 			log.Println(p)
 
 			if p != nil {
-				p = pulse.FixPulses(p)
-				log.Println(p)
+				measurement := m.decode(mapPulse(p.Pulses))
+				log.Println(measurement)
 
-				return m.decode(mapPulse(p.Pulses)), nil
+				return measurement, nil
 			}
 		}
-		fmt.Println(scanner.Text())
 	}
 
 	if err := scanner.Err(); err != nil {
@@ -83,7 +81,6 @@ func (m *Sensor) Read() (*Measurement, error) {
 // and returns the human-readable temperature and humidity. See:
 // https://github.com/pimatic/rfcontroljs/blob/master/src/protocols/weather15.coffee
 func (m *Sensor) decode(pulses string) *Measurement {
-
 	return &Measurement{
 		Id:          binaryToNumber(pulses, 0, 12),
 		Channel:     binaryToNumber(pulses, 14, 16) + 1,
