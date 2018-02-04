@@ -4,6 +4,8 @@ import (
 	"log"
 	"net/http"
 
+	"fmt"
+
 	"github.com/jckuester/weather-station/sensor"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -11,31 +13,37 @@ import (
 )
 
 var (
-	device     = kingpin.Arg("device", "Arduino connected to USB, such as /dev/ttyUSB0").Required().String()
-	listenAddr = kingpin.Arg("listen-address", "The address to listen on for HTTP requests.").
+	device     = kingpin.Flag("device", "Arduino connected to USB, such as /dev/ttyUSB0").Required().String()
+	listenAddr = kingpin.Flag("listen-address", "The address to listen on for HTTP requests.").
 			Default(":8080").String()
+	ids = kingpin.Arg("ids", "Device ids of the sensors").Required().Ints()
 )
 
 var (
-	temperature = prometheus.NewGauge(prometheus.GaugeOpts{
-		Name: "meter_temperature_celsius",
-		Help: "Current temperature in Celsius",
-	})
-	humidity = prometheus.NewGauge(prometheus.GaugeOpts{
-		Name: "meter_humidity_percent",
-		Help: "Current humidity level in %",
-	})
+	temperature = make(map[int]prometheus.Gauge)
+	humidity    = make(map[int]prometheus.Gauge)
 )
-
-func init() {
-	prometheus.MustRegister(temperature)
-	prometheus.MustRegister(humidity)
-}
 
 func main() {
 	kingpin.Parse()
+
+	for _, i := range *ids {
+		temperature[i] = prometheus.NewGauge(prometheus.GaugeOpts{
+			Name: fmt.Sprintf("meter_temperature_celsius_%d", i),
+			Help: "Current temperature in Celsius",
+		})
+		humidity[i] = prometheus.NewGauge(prometheus.GaugeOpts{
+			Name: fmt.Sprintf("meter_humidity_percent_%d", i),
+			Help: "Current humidity level in %",
+		})
+
+		prometheus.MustRegister(temperature[i])
+		prometheus.MustRegister(humidity[i])
+	}
+
 	http.Handle("/metrics", promhttp.Handler())
 	go measure()
+
 	log.Printf("Serving metrics at '%v/metrics'", *listenAddr)
 	log.Fatal(http.ListenAndServe(*listenAddr, nil))
 }
@@ -55,8 +63,21 @@ func measure() {
 		}
 
 		if result != nil {
-			temperature.Set(result.Temperature)
-			humidity.Set(float64(result.Humidity))
+			if t, ok := temperature[result.Id]; ok {
+				t.Set(result.Temperature)
+			}
+			if h, ok := humidity[result.Id]; ok {
+				h.Set(float64(result.Humidity))
+			}
 		}
 	}
+}
+
+func contains(s []int, e int) bool {
+	for _, a := range s {
+		if a == e {
+			return true
+		}
+	}
+	return false
 }

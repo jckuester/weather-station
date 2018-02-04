@@ -62,10 +62,13 @@ func (m *Sensor) Read() (*Measurement, error) {
 			log.Println(p)
 
 			if p != nil && len(p.Pulses) == 76 {
-				measurement := m.decode(mapPulse(p.Pulses))
-				log.Println(measurement)
+				mapped, err := mapPulse(p.Pulses)
+				if err == nil {
+					measurement := m.decode(mapped)
+					log.Println(measurement)
 
-				return measurement, nil
+					return measurement, nil
+				}
 			}
 		}
 	}
@@ -146,7 +149,7 @@ func binaryToBoolean(data string, i int) bool {
 	return string(data[i]) == "1"
 }
 
-func mapPulse(data string) string {
+func mapPulse(data string) (string, error) {
 	var hadMatch bool
 	var i int
 	var result string
@@ -169,13 +172,12 @@ func mapPulse(data string) string {
 				}
 			}
 		}
+		if !hadMatch {
+			return "", errors.New("Parsing error")
+		}
 	}
 
-	if !hadMatch {
-		return ""
-	}
-
-	return result
+	return result, nil
 }
 
 // Close closes the opened device file.

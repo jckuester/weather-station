@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/jckuester/weather-station/pulse"
+	"github.com/prometheus/common/log"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -11,7 +12,12 @@ func TestMapPulse(t *testing.T) {
 	pulse := "020101020201020201010103"
 	bits := "10011011000"
 
-	assert.Equal(t, mapPulse(pulse), bits)
+	mapped, err := mapPulse(pulse)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	assert.Equal(t, mapped, bits)
 }
 
 func TestDecode(t *testing.T) {
@@ -43,13 +49,19 @@ func TestDecode2(t *testing.T) {
 }
 
 func TestRead(t *testing.T) {
-	pC := "508 4160 2124 9096 0 0 0 0 0102020101020201020101020202010202020202010102020102010102010202020202020103"
+	//pC := "508 4160 2124 9096 0 0 0 0 0102020101020201020101020202010202020202010102020102010102010202020202020103"
+	pC := "488 1944 980 3920 0 0 0 0 0101020102010202010202020101010101010101010201020101010101020101020102010003"
 
 	s := &Sensor{}
 
 	p := pulse.PrepareCompressedPulses(pC)
-	bits := mapPulse(p.Pulses)
+	bits, err := mapPulse(p.Pulses)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	m := s.decode(bits)
+
 	assert.Equal(t, 64, m.Humidity, "Humidity")
 	assert.Equal(t, 20.3, m.Temperature, "Temperature")
 	assert.Equal(t, false, m.LowBattery, "LowBattery")
