@@ -50,7 +50,6 @@ func TestRead(t *testing.T) {
 	p := pulse.PrepareCompressedPulses(pC)
 	bits := mapPulse(p.Pulses)
 	m := s.decode(bits)
-
 	assert.Equal(t, 64, m.Humidity, "Humidity")
 	assert.Equal(t, 20.3, m.Temperature, "Temperature")
 	assert.Equal(t, false, m.LowBattery, "LowBattery")

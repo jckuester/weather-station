@@ -61,7 +61,7 @@ func (m *Sensor) Read() (*Measurement, error) {
 			p := pulse.PrepareCompressedPulses(pulseTrimmed)
 			log.Println(p)
 
-			if p != nil {
+			if p != nil && len(p.Pulses) == 76 {
 				measurement := m.decode(mapPulse(p.Pulses))
 				log.Println(measurement)
 
