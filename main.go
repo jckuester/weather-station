@@ -6,7 +6,7 @@ import (
 
 	"fmt"
 
-	"github.com/jckuester/weather-station/sensor"
+	"github.com/jckuester/weather-station/arduino"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"gopkg.in/alecthomas/kingpin.v2"
@@ -49,7 +49,7 @@ func main() {
 }
 
 func measure() {
-	sensor := &sensor.Sensor{}
+	sensor := &arduino.Arduino{}
 	err := sensor.Open(*device)
 	if err != nil {
 		log.Fatalf("Could not open '%v'", *device)
@@ -59,9 +59,9 @@ func measure() {
 	for {
 		result, err := sensor.Read()
 		if err != nil {
-			log.Fatalf("Something went wrong: '%v'", err)
+			log.Printf("Something went wrong: '%v'", err)
+			break
 		}
-
 		if result != nil {
 			if t, ok := temperature[result.Id]; ok {
 				t.Set(result.Temperature)
@@ -71,13 +71,4 @@ func measure() {
 			}
 		}
 	}
-}
-
-func contains(s []int, e int) bool {
-	for _, a := range s {
-		if a == e {
-			return true
-		}
-	}
-	return false
 }
