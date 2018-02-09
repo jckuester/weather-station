@@ -54,12 +54,17 @@ func (m *Arduino) Read() (*protocol.Measurement, error) {
 			if err != nil {
 				return nil, errors.Wrapf(err, "Failed to prepare compressed pulse '%s'", pulseTrimmed)
 			}
-			log.Println(p)
+			log.Printf("%+v\n", *p)
 
 			// only one protocol that we need for the weather station is supported right now
 			pc := protocol.Weather15
 			m, err := pulse.Decode(p, pc)
-			return m.(*protocol.Measurement), errors.Wrapf(err, "Failed decode pulse info '%s' for protocol '%s'", p, pc)
+			if err != nil {
+				return nil, errors.Wrapf(err, "Failed decode pulse info '%s' for protocol '%s'", p, pc)
+			}
+			if m != nil {
+				return m.(*protocol.Measurement), nil
+			}
 		}
 	}
 

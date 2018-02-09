@@ -63,6 +63,8 @@ func measure() {
 			break
 		}
 		if result != nil {
+			log.Printf("%+v\n", *result)
+
 			if t, ok := temperature[result.Id]; ok {
 				t.Set(result.Temperature)
 			}
