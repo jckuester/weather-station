@@ -1,5 +1,12 @@
 # Weather station
 
+<p align="right">
+  <a href="https://goreportcard.com/report/github.com/jckuester/weather-station">
+  <img src="https://goreportcard.com/badge/github.com/cloudetc/awsweeper" /></a>
+  <a href="https://godoc.org/github.com/jckuester/weather-station">
+  <img src="https://godoc.org/github.com/cloudetc/awsweeper?status.svg" /></a>
+</p>
+
 <p>
  <img src="img/hardware.jpg" alt="Hardware for the weather station">   
  <em>A home-made weather station using: Raspberry Pi, Arduino Nano, a RXB6 433Mhz receiver,
