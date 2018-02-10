@@ -6,7 +6,11 @@ import (
 
 	"fmt"
 
+	"strings"
+
 	"github.com/jckuester/weather-station/arduino"
+	"github.com/jckuester/weather-station/protocol"
+	"github.com/jckuester/weather-station/pulse"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"gopkg.in/alecthomas/kingpin.v2"
@@ -56,26 +60,51 @@ func measure() {
 		return
 	}
 
-	err = a.Write("RF receive 0")
+	line, err := a.Read()
 	if err != nil {
-		log.Fatalf("Could not write to '%v'", *device)
-		return
+		log.Println(err)
+	}
+	if strings.Contains(line, "ready") {
+		err = a.Write("RF receive 0")
+		if err != nil {
+			log.Fatalf("Could not write to '%v'", *device)
+			return
+		}
 	}
 
 	for {
-		result, err := a.Read()
+		line, err := a.Read()
 		if err != nil {
-			log.Printf("Something went wrong: '%v'", err)
+			log.Println(err)
 			continue
 		}
-		if result != nil {
-			log.Printf("%+v\n", *result)
 
-			if t, ok := temperature[result.Id]; ok {
-				t.Set(result.Temperature)
+		if strings.HasPrefix(line, "RF receive") {
+			pulseTrimmed := strings.TrimPrefix(line, "RF receive ")
+
+			p, err := pulse.PrepareCompressed(pulseTrimmed)
+			if err != nil {
+				log.Println(err)
+				continue
 			}
-			if h, ok := humidity[result.Id]; ok {
-				h.Set(float64(result.Humidity))
+			log.Printf("%+v\n", *p)
+
+			m, err := pulse.Decode(p)
+			if err != nil {
+				log.Println(err)
+				continue
+			}
+
+			if m != nil {
+				m := m.(*protocol.Measurement)
+				log.Printf("%+v\n", *m)
+
+				if t, ok := temperature[m.Id]; ok {
+					t.Set(m.Temperature)
+				}
+				if h, ok := humidity[m.Id]; ok {
+					h.Set(float64(m.Humidity))
+				}
 			}
 		}
 	}

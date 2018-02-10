@@ -7,13 +7,10 @@ import (
 	"bufio"
 	"log"
 	"os"
-	"strings"
 	"sync/atomic"
 
 	"fmt"
 
-	"github.com/jckuester/weather-station/protocol"
-	"github.com/jckuester/weather-station/pulse"
 	"github.com/pkg/errors"
 )
 
@@ -39,11 +36,11 @@ func (m *Arduino) Open(name string) (err error) {
 	return nil
 }
 
-// Read will read from the device file and decodes the received sensor information.
+// Read reads and returns the next line from a device file.
 // Before it can be used the device file needs to be opened via Open.
-func (m *Arduino) Read() (*protocol.Measurement, error) {
+func (m *Arduino) Read() (string, error) {
 	if atomic.LoadInt32(&m.opened) != 1 {
-		return nil, errors.New("Device needs to be opened")
+		return "", errors.New("Device needs to be opened")
 	}
 
 	scanner := bufio.NewScanner(m.file)
@@ -51,42 +48,27 @@ func (m *Arduino) Read() (*protocol.Measurement, error) {
 		line := scanner.Text()
 		log.Println(line)
 
-		if strings.HasPrefix(line, "RF receive") {
-			pulseTrimmed := strings.TrimPrefix(line, "RF receive ")
-
-			p, err := pulse.PrepareCompressed(pulseTrimmed)
-			if err != nil {
-				return nil, errors.Wrapf(err, "Failed to prepare compressed pulse '%s'", pulseTrimmed)
-			}
-			log.Printf("%+v\n", *p)
-
-			m, err := pulse.Decode(p)
-			if err != nil {
-				return nil, errors.Wrapf(err, "Failed decode pulse info '%s'", p)
-			}
-			if m != nil {
-				return m.(*protocol.Measurement), nil
-			}
-		}
+		return line, nil
 	}
 
 	if err := scanner.Err(); err != nil {
-		return nil, errors.Wrapf(err, "Error while scanning device file '%s'", m.file.Name())
+		return "", errors.Wrapf(err, "Error while scanning device file '%s'", m.file.Name())
 	}
 
-	return nil, nil
+	return "", nil
 }
 
-func (m *Arduino) Write(msg string) error {
+// Write writes a command to the device file (e.g., to tell the Arduino to start receiving signals).
+func (m *Arduino) Write(cmd string) error {
 	if atomic.LoadInt32(&m.opened) != 1 {
 		return errors.New("Device needs to be opened")
 	}
-	n3, err := m.file.WriteString(fmt.Sprintf("%s\n", msg))
+	b, err := m.file.WriteString(fmt.Sprintf("%s\n", cmd))
 	if err != nil {
 		log.Println(err)
 		return err
 	}
-	fmt.Printf("Wrote %d bytes\n", n3)
+	fmt.Printf("Wrote command '%s' to '%s' (%d bytes)\n", cmd, m.file.Name(), b)
 
 	m.file.Sync()
 
