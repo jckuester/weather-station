@@ -49,15 +49,21 @@ func main() {
 }
 
 func measure() {
-	sensor := &arduino.Arduino{}
-	err := sensor.Open(*device)
+	a := &arduino.Arduino{}
+	err := a.Open(*device)
 	if err != nil {
 		log.Fatalf("Could not open '%v'", *device)
 		return
 	}
 
+	err = a.Write("RF receive 0")
+	if err != nil {
+		log.Fatalf("Could not write to '%v'", *device)
+		return
+	}
+
 	for {
-		result, err := sensor.Read()
+		result, err := a.Read()
 		if err != nil {
 			log.Printf("Something went wrong: '%v'", err)
 			continue

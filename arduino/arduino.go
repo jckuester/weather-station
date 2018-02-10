@@ -10,6 +10,8 @@ import (
 	"strings"
 	"sync/atomic"
 
+	"fmt"
+
 	"github.com/jckuester/weather-station/protocol"
 	"github.com/jckuester/weather-station/pulse"
 	"github.com/pkg/errors"
@@ -73,6 +75,22 @@ func (m *Arduino) Read() (*protocol.Measurement, error) {
 	}
 
 	return nil, nil
+}
+
+func (m *Arduino) Write(msg string) error {
+	if atomic.LoadInt32(&m.opened) != 1 {
+		return errors.New("Device needs to be opened")
+	}
+	n3, err := m.file.WriteString(fmt.Sprintf("%s\n", msg))
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	fmt.Printf("Wrote %d bytes\n", n3)
+
+	m.file.Sync()
+
+	return nil
 }
 
 // Close closes the opened device file.
