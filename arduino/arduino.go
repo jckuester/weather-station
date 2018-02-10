@@ -30,7 +30,7 @@ type Arduino struct {
 func (m *Arduino) Open(name string) (err error) {
 	atomic.StoreInt32(&m.opened, 1)
 
-	m.file, err = os.Open(name)
+	m.file, err = os.OpenFile(name, os.O_RDWR, 0644)
 	if err != nil {
 		log.Fatal(err)
 	}
