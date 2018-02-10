@@ -60,7 +60,7 @@ func measure() {
 		result, err := sensor.Read()
 		if err != nil {
 			log.Printf("Something went wrong: '%v'", err)
-			break
+			continue
 		}
 		if result != nil {
 			log.Printf("%+v\n", *result)

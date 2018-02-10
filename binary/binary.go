@@ -1,10 +1,12 @@
 package binary
 
-import "strconv"
-
 // Package binary implements some binary operations
 // needed for decoding received pulse sequences.
 
+import "strconv"
+
+// ToNumber takes the characters from position b to e (exclusive) of a string data,
+// which must be a binary representation, and converts them into a decimal number.
 func ToNumber(data string, b int, e int) (int, error) {
 	i, err := strconv.ParseInt(data[b:e], 2, 0)
 	if err != nil {
@@ -12,7 +14,6 @@ func ToNumber(data string, b int, e int) (int, error) {
 	}
 
 	return int(i), nil
-
 }
 
 func ToSignedNumber(data string, b int, e int) (int, error) {

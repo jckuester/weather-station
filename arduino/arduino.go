@@ -1,20 +1,21 @@
 package arduino
 
+// Package arduino helps to talk to
+// an Arduino connected via USB (to a Raspberry Pi).
+
 import (
+	"bufio"
 	"log"
 	"os"
-	"sync/atomic"
-
 	"strings"
-
-	"bufio"
+	"sync/atomic"
 
 	"github.com/jckuester/weather-station/protocol"
 	"github.com/jckuester/weather-station/pulse"
 	"github.com/pkg/errors"
 )
 
-// Arduino represents an Arduino
+// Arduino represents the device file of and Arduino
 // connected to the USB port.
 type Arduino struct {
 	file   *os.File
@@ -22,7 +23,8 @@ type Arduino struct {
 }
 
 // Open opens the named device file for reading,
-// which is usually /dev/ttyUSB0 for an Arduino connected to a Raspberry Pi.
+// which is usually /dev/ttyUSB0 for an Arduino
+// connected to a Raspberry Pi.
 func (m *Arduino) Open(name string) (err error) {
 	atomic.StoreInt32(&m.opened, 1)
 
@@ -56,11 +58,9 @@ func (m *Arduino) Read() (*protocol.Measurement, error) {
 			}
 			log.Printf("%+v\n", *p)
 
-			// only one protocol that we need for the weather station is supported right now
-			pc := protocol.Weather15
-			m, err := pulse.Decode(p, pc)
+			m, err := pulse.Decode(p)
 			if err != nil {
-				return nil, errors.Wrapf(err, "Failed decode pulse info '%s' for protocol '%s'", p, pc)
+				return nil, errors.Wrapf(err, "Failed decode pulse info '%s'", p)
 			}
 			if m != nil {
 				return m.(*protocol.Measurement), nil

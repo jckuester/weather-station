@@ -1,5 +1,10 @@
 package pulse
 
+// Package pulse decodes a compressed pulse sequence
+// received via the Arduino library https://github.com/pimatic/RFControl.
+//
+// For decoding details see also https://github.com/pimatic/rfcontroljs#details.
+
 import (
 	"strconv"
 	"strings"
@@ -8,18 +13,12 @@ import (
 
 	"fmt"
 
-	"errors"
-
 	"math"
 
 	"github.com/bradfitz/slice"
 	"github.com/jckuester/weather-station/protocol"
+	"github.com/pkg/errors"
 )
-
-// Package pulse decodes a compressed pulse sequence
-// received via the Arduino library https://github.com/pimatic/RFControl.
-//
-// For decoding details see also https://github.com/pimatic/rfcontroljs#details.
 
 type PulseInfo struct {
 	Lengths []int  // length of pulses
@@ -31,13 +30,17 @@ type Pair struct {
 	second int
 }
 
-func Decode(p *PulseInfo, pc *protocol.Protocol) (interface{}, error) {
-	if protocolMatches(p, pc) {
-		binary, err := Map(p.Seq, pc.Mapping)
-		if err != nil {
-			return nil, err
+// Decode tries to decode a received PulseInfo
+// based on all currently supported protocols.
+func Decode(p *PulseInfo) (interface{}, error) {
+	for _, pc := range protocol.Supported() {
+		if protocolMatches(p, pc) {
+			binary, err := Map(p.Seq, pc.Mapping)
+			if err != nil {
+				return nil, err
+			}
+			return pc.Decode(binary)
 		}
-		return pc.Decode(binary)
 	}
 	return nil, nil
 }
@@ -99,7 +102,7 @@ func sortCompressed(p *PulseInfo) (*PulseInfo, error) {
 
 	seq, err := changeRepresentation(p.Seq, sortedIndices)
 	if err != nil {
-		return nil, errors.New(fmt.Sprintf("Failed to change the represenation of: %s", p.Seq))
+		return nil, errors.Wrapf(err, "Failed to change the representation of '%s'", p.Seq)
 	}
 
 	return &PulseInfo{
