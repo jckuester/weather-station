@@ -1,14 +1,15 @@
+// Package binary implements some binary operations
+// for decoding received pulse sequences.
 package binary
 
-// Package binary implements some binary operations
-// needed for decoding received pulse sequences.
+import (
+	"strconv"
+)
 
-import "strconv"
-
-// ToNumber takes the characters from position b to e (exclusive) of a string data,
-// which must be a binary representation, and converts them into a decimal number.
-func ToNumber(data string, b int, e int) (int, error) {
-	i, err := strconv.ParseInt(data[b:e], 2, 0)
+// ToNumber converts the characters from position b to e (exclusive) of a string input,
+// which must be only 0s and 1s, into a decimal number.
+func ToNumber(input string, b int, e int) (int, error) {
+	i, err := strconv.ParseInt(input[b:e], 2, 0)
 	if err != nil {
 		return 0, err
 	}
@@ -16,28 +17,30 @@ func ToNumber(data string, b int, e int) (int, error) {
 	return int(i), nil
 }
 
-func ToSignedNumber(data string, b int, e int) (int, error) {
-	signedPos := b
-	b++
-
-	i, err := strconv.ParseInt(string(data[signedPos]), 2, 0)
+// ToNumber converts the characters from position b to e (exclusive) of a string input,
+// which must be only 0s and 1s, into a signed decimal number
+// (i.e. the first bit of input is interpreted as the sign).
+func ToSignedNumber(input string, b int, e int) (int, error) {
+	i, err := strconv.ParseInt(string(input[b]), 2, 0)
 	if err != nil {
 		return 0, err
 	}
 
+	b++
+
 	if i == 1 {
-		return ToSignedNumberMSBLSB(data, b, e)
+		return toSignedNumberMSBLSB(input, b, e)
 	} else {
-		return ToNumberMSBLSB(data, b, e)
+		return toNumberMSBLSB(input, b, e)
 	}
 }
 
-func ToSignedNumberMSBLSB(data string, b int, e int) (int, error) {
+func toSignedNumberMSBLSB(input string, b int, e int) (int, error) {
 	number := ^0
 	i := b
 
 	for i <= e {
-		s, err := strconv.ParseInt(string(data[i]), 2, 0)
+		s, err := strconv.ParseInt(string(input[i]), 2, 0)
 		if err != nil {
 			return 0, err
 		}
@@ -49,12 +52,12 @@ func ToSignedNumberMSBLSB(data string, b int, e int) (int, error) {
 	return number, nil
 }
 
-func ToNumberMSBLSB(data string, b int, e int) (int, error) {
+func toNumberMSBLSB(input string, b int, e int) (int, error) {
 	number := 0
 	i := b
 
 	for i <= e {
-		s, err := strconv.ParseInt(string(data[i]), 2, 0)
+		s, err := strconv.ParseInt(string(input[i]), 2, 0)
 		if err != nil {
 			return 0, err
 		}
@@ -66,6 +69,8 @@ func ToNumberMSBLSB(data string, b int, e int) (int, error) {
 	return number, nil
 }
 
-func ToBoolean(data string, i int) bool {
-	return string(data[i]) == "1"
+// ToBoolean converts the character at position i of a string input,
+// which must be only 0s and 1s, into a boolean (1 means true).
+func ToBoolean(input string, i int) bool {
+	return string(input[i]) == "1"
 }
