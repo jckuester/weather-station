@@ -9,7 +9,7 @@ import (
 func TestDecode_weather15(t *testing.T) {
 	bits := "1001100101100010000011001000010000111"
 
-	d, _ := Weather15.Decode(bits)
+	d, _ := Supported()[0].Decode(bits)
 	m := d.(*Measurement)
 
 	assert.Equal(t, 67, m.Humidity, "Humidity")

@@ -17,13 +17,13 @@ import (
 )
 
 var (
-	device     = kingpin.Flag("device", "Arduino connected to USB, such as /dev/ttyUSB0").Required().String()
+	device = kingpin.Flag("device", "Arduino connected to USB").
+		Default("/dev/ttyUSB0").String()
 	listenAddr = kingpin.Flag("listen-address", "The address to listen on for HTTP requests.").
 			Default(":8080").String()
-	ids = kingpin.Arg("ids", "Device ids of the sensors").Required().Ints()
-)
+	ids = kingpin.Arg("ids", "Device ids of the temperature/humidity sensors").
+		Required().Ints()
 
-var (
 	temperature = make(map[int]prometheus.Gauge)
 	humidity    = make(map[int]prometheus.Gauge)
 )
@@ -46,66 +46,79 @@ func main() {
 	}
 
 	http.Handle("/metrics", promhttp.Handler())
-	go measure()
+
+	go receive(device)
 
 	log.Printf("Serving metrics at '%v/metrics'", *listenAddr)
 	log.Fatal(http.ListenAndServe(*listenAddr, nil))
 }
 
-func measure() {
-	a := &arduino.Arduino{}
+func receive(device *string) {
+	a := &arduino.Device{}
+
 	err := a.Open(*device)
 	if err != nil {
 		log.Fatalf("Could not open '%v'", *device)
-		return
 	}
 
-	line, err := a.Read()
+	err = a.Read(Ready{})
+	if err != nil {
+		log.Fatalf("Device is not ready to take commands: %s", err)
+	}
+
+	err = a.Write(arduino.ReceiveCmd)
+	if err != nil {
+		log.Fatalf("Could not write to '%v'", *device)
+	}
+
+	err = a.Read(DecodedSignal{})
 	if err != nil {
 		log.Println(err)
 	}
-	if strings.Contains(line, "ready") {
-		err = a.Write("RF receive 0")
-		if err != nil {
-			log.Fatalf("Could not write to '%v'", *device)
-			return
-		}
-	}
+}
 
-	for {
-		line, err := a.Read()
+// Ready implements a Processor that waits and returns
+// when the Arduino is ready to receive commands.
+type Ready struct{}
+
+func (Ready) Process(s string) bool {
+	if strings.Contains(s, arduino.Ready) {
+		return false
+	}
+	return true
+}
+
+// DecodedSignal implements a Processor that
+// decodes received raw signals and sets the Prometheus Gauge
+// based on the decoded values.
+type DecodedSignal struct{}
+
+func (DecodedSignal) Process(line string) bool {
+	if strings.HasPrefix(line, arduino.ReceivePrefix) {
+		trimmed := strings.TrimPrefix(line, arduino.ReceivePrefix)
+
+		p, err := pulse.Prepare(trimmed)
 		if err != nil {
 			log.Println(err)
-			continue
+		}
+		log.Printf("%+v\n", *p)
+
+		m, err := pulse.Decode(p)
+		if err != nil {
+			log.Println(err)
 		}
 
-		if strings.HasPrefix(line, "RF receive") {
-			pulseTrimmed := strings.TrimPrefix(line, "RF receive ")
+		if m != nil {
+			m := m.(*protocol.Measurement)
+			log.Printf("%+v\n", *m)
 
-			p, err := pulse.PrepareCompressed(pulseTrimmed)
-			if err != nil {
-				log.Println(err)
-				continue
+			if t, ok := temperature[m.Id]; ok {
+				t.Set(m.Temperature)
 			}
-			log.Printf("%+v\n", *p)
-
-			m, err := pulse.Decode(p)
-			if err != nil {
-				log.Println(err)
-				continue
-			}
-
-			if m != nil {
-				m := m.(*protocol.Measurement)
-				log.Printf("%+v\n", *m)
-
-				if t, ok := temperature[m.Id]; ok {
-					t.Set(m.Temperature)
-				}
-				if h, ok := humidity[m.Id]; ok {
-					h.Set(float64(m.Humidity))
-				}
+			if h, ok := humidity[m.Id]; ok {
+				h.Set(float64(m.Humidity))
 			}
 		}
 	}
+	return true
 }

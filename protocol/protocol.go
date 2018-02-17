@@ -1,19 +1,20 @@
-package protocol
-
-// Package protocol contains the supported protocols that
+// Package protocol contains supported protocols that
 // can be used to decode signals received via the
 // https://github.com/pimatic/RFControl library.
+package protocol
 
 import (
 	"github.com/jckuester/weather-station/binary"
 )
 
+// Protocol defines a protocol that is used to match
+// received signals and decode them.
 type Protocol struct {
-	Device    string                            // the type of device that uses the protocol, e.g., "Globaltronics GT-WT-01 variant"
+	Device    string                            // the type of device that uses the protocol
 	SeqLength []int                             // allowed lengths of the sequence of pulses
 	Lengths   []int                             // pulse lengths
-	Mapping   map[string]string                 // to map the pulse sequence into binary representation
-	Decode    func(string) (interface{}, error) // Decode a binary representation of a pulse sequence into a human-readable struct
+	Mapping   map[string]string                 // maps the pulse sequence into binary representation (i.e. 0s and 1s)
+	Decode    func(string) (interface{}, error) // decodes the binary representation into a human-readable struct
 }
 
 // Measurement is the result of a decoded pulse
@@ -29,7 +30,6 @@ type Measurement struct {
 // Supported returns a list of all the currently supported
 // protocols that can be used for trying to decode received signals.
 func Supported() []*Protocol {
-
 	return []*Protocol{
 		// Only one protocol supported right now
 		// (see: https://github.com/pimatic/rfcontroljs/blob/master/src/protocols/weather15.coffee)

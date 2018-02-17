@@ -1,9 +1,8 @@
-package pulse
-
 // Package pulse decodes a compressed pulse sequence
 // received via the Arduino library https://github.com/pimatic/RFControl.
 //
 // For decoding details see also https://github.com/pimatic/rfcontroljs#details.
+package pulse
 
 import (
 	"strconv"
@@ -20,51 +19,55 @@ import (
 	"github.com/pkg/errors"
 )
 
-type PulseInfo struct {
-	Lengths []int  // length of pulses
-	Seq     string // sequence of pulses
+// Signal implements a received 433 MHz signal of compressed raw time series
+// that consists of pulse lengths and a sequence of pulses.
+type Signal struct {
+	Lengths []int
+	Seq     string
 }
 
+// Pair simply implements a tuple fo two values
+// (first, second).
 type Pair struct {
 	first  int
 	second int
 }
 
-// Decode tries to decode a received PulseInfo
+// Decode tries to decode a received Signal
 // based on all currently supported protocols.
-func Decode(p *PulseInfo) (interface{}, error) {
-	for _, pc := range protocol.Supported() {
-		if protocolMatches(p, pc) {
-			binary, err := Map(p.Seq, pc.Mapping)
+func Decode(s *Signal) (interface{}, error) {
+	for _, p := range protocol.Supported() {
+		if matches(s, p) {
+			binary, err := Map(s.Seq, p.Mapping)
 			if err != nil {
 				return nil, err
 			}
-			return pc.Decode(binary)
+			return p.Decode(binary)
 		}
 	}
 	return nil, nil
 }
 
-// protocolMatches checks whether a received pulseInfo matches
+// matches checks whether a received Signal matches
 // a protocol.
-func protocolMatches(p *PulseInfo, pc *protocol.Protocol) bool {
+func matches(s *Signal, p *protocol.Protocol) bool {
 	var i int
 	var maxDelta float64
 
 	// length of the pulse sequence must match
-	if !contains(pc.SeqLength, len(p.Seq)) {
+	if !contains(p.SeqLength, len(s.Seq)) {
 		return false
 	}
 
 	// number of pulse length must match
-	if len(p.Lengths) != len(pc.Lengths) {
+	if len(s.Lengths) != len(p.Lengths) {
 		return false
 	}
 
 	// pulse length must be in a certain range
-	for i < len(p.Lengths) {
-		maxDelta = float64(float64(p.Lengths[i]) * float64(0.4))
-		if math.Abs(float64(p.Lengths[i]-pc.Lengths[i])) > maxDelta {
+	for i < len(s.Lengths) {
+		maxDelta = float64(float64(s.Lengths[i]) * float64(0.4))
+		if math.Abs(float64(s.Lengths[i]-p.Lengths[i])) > maxDelta {
 			return false
 		}
 		i++
@@ -72,47 +75,57 @@ func protocolMatches(p *PulseInfo, pc *protocol.Protocol) bool {
 	return true
 }
 
-// PrepareCompressed takes an input, such as
-// "516 4156 2116 9116 0 0 0 0 01020201010202010201010201020102020",
-// splits it into the pulse lenghts (removes  pulse lenght that are 0),
-// and sorts the pulse lengths in ascending order
-func PrepareCompressed(input string) (*PulseInfo, error) {
+// Prepare takes an compressed signal as input,
+// 1) splits it into pulse lengths and pulse sequence,
+// 2) removes pulse lengths that are 0,
+// 3) sorts the pulse lengths in ascending order, and
+// 4) rearranges the pulse sequence, which characters each is a pulse length
+// represented by its index in the array of pulse lengths.
+func Prepare(input string) (*Signal, error) {
 	parts := strings.Split(input, " ")
 	if len(parts) < 8 {
 		return nil, errors.New(fmt.Sprintf("Incorrect number of pulse lengths: %s", input))
 	}
-	pulseLengths := parts[:8]
+	lengths := parts[:8]
 	seq := parts[8]
 
-	pulseLengths = Filter(pulseLengths, func(s string) bool {
+	lengths = filter(lengths, func(s string) bool {
 		return s != "0"
 	})
 
-	return sortCompressed(&PulseInfo{
-		StringToIntArray(pulseLengths),
-		seq,
-	})
-}
-
-// sortCompressed sorts the given pulse lengths in ascending order
-// and changes their representation in the pulse sequence accordingly to the new indices.
-func sortCompressed(p *PulseInfo) (*PulseInfo, error) {
-	sortedIndices := sortIndices(p.Lengths)
-	sort.Ints(p.Lengths)
-
-	seq, err := changeRepresentation(p.Seq, sortedIndices)
+	lengthsInts, err := toIntArray(lengths)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Failed to change the representation of '%s'", p.Seq)
+		return nil, errors.New(fmt.Sprintf("Cannot convert pulse lengths to integers: %s", lengths))
 	}
 
-	return &PulseInfo{
-		p.Lengths,
+	return sortSignal(
+		&Signal{
+			lengthsInts,
+			seq,
+		})
+}
+
+// sortSignal sorts the given pulse lengths in ascending order
+// and changes the pulse sequence, where each character is a pulse length
+// represented by its index in the array of pulse lengths,
+// according to the new order of indices.
+func sortSignal(s *Signal) (*Signal, error) {
+	sortedIndices := sortIndices(s.Lengths)
+	sort.Ints(s.Lengths)
+
+	seq, err := changeRepresentation(s.Seq, sortedIndices)
+	if err != nil {
+		return nil, errors.Wrapf(err, "Failed to change the representation of '%s'", s.Seq)
+	}
+
+	return &Signal{
+		s.Lengths,
 		seq,
 	}, nil
 }
 
 // sortIndices sorts the indicies of a
-// given array a, i.e. iff the array is
+// given array a, i.e. if the array is
 // [200, 600, 500], then it returns [0, 2, 1].
 func sortIndices(a []int) []int {
 	pairs := make([]Pair, len(a))
@@ -136,12 +149,12 @@ func sortIndices(a []int) []int {
 // represents a pulse length by its index in the array of pulse lengths.
 // Therefore, after sorting the pulse lengths array, the representation in the pulse sequence needs to
 // be changed accordingly.
-func changeRepresentation(data string, mapping []int) (string, error) {
+func changeRepresentation(seq string, mapping []int) (string, error) {
 	var result string
 	var d int
 
-	for d < len(data) {
-		i, err := strconv.ParseInt(string(data[d]), 10, 0)
+	for d < len(seq) {
+		i, err := strconv.ParseInt(string(seq[d]), 10, 0)
 		if err != nil {
 			return "", err
 		}
@@ -179,9 +192,9 @@ func Map(seq string, mapping map[string]string) (string, error) {
 	return result, nil
 }
 
-func Filter(vs []string, f func(string) bool) []string {
+func filter(a []string, f func(string) bool) []string {
 	vsf := make([]string, 0)
-	for _, v := range vs {
+	for _, v := range a {
 		if f(v) {
 			vsf = append(vsf, v)
 		}
@@ -189,18 +202,18 @@ func Filter(vs []string, f func(string) bool) []string {
 	return vsf
 }
 
-func StringToIntArray(a []string) []int {
-	var t2 = []int{}
+func toIntArray(a []string) ([]int, error) {
+	var intArray = []int{}
 
 	for _, i := range a {
 		j, err := strconv.Atoi(i)
 		if err != nil {
-			panic(err)
+			return nil, err
 		}
-		t2 = append(t2, j)
+		intArray = append(intArray, j)
 	}
 
-	return t2
+	return intArray, nil
 }
 
 func contains(s []int, e int) bool {
