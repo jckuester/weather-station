@@ -17,7 +17,7 @@ func ToNumber(input string, b int, e int) (int, error) {
 	return int(i), nil
 }
 
-// ToNumber converts the characters from position b to e (exclusive) of a string input,
+// ToSignedNumber converts the characters from position b to e (exclusive) of a string input,
 // which must be only 0s and 1s, into a signed decimal number
 // (i.e. the first bit of input is interpreted as the sign).
 func ToSignedNumber(input string, b int, e int) (int, error) {

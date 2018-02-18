@@ -6,6 +6,7 @@ import (
 
 	"github.com/jckuester/weather-station/protocol"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestMatches(t *testing.T) {
@@ -60,17 +61,17 @@ func TestMatches_numberOfPuleLengthDiffer(t *testing.T) {
 	assert.Equal(t, false, matches(s, p))
 }
 
-func TestMap(t *testing.T) {
+func TestConvert(t *testing.T) {
 	seq := "020101020201020201010103"
 	bits := "10011011000"
 
 	var m = map[string]string{
-		"01": "0", // binary 0
-		"02": "1", // binary 1
-		"03": "",  // footer
+		"01": "0",
+		"02": "1",
+		"03": "",
 	}
 
-	mapped, err := Map(seq, m)
+	mapped, err := convert(seq, m)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -96,9 +97,39 @@ func TestPrepare_InvalidCharacters(t *testing.T) {
 }
 
 func TestSortIndices(t *testing.T) {
-	a := []int{200, 600, 500}
+	a := []int{516, 9112, 4152, 2116}
 
 	sortedIndices := sortIndices(a)
 
-	assert.Equal(t, sortedIndices, []int{0, 2, 1})
+	assert.Equal(t, sortedIndices, map[string]string{
+		"0": "0",
+		"1": "3",
+		"2": "2",
+		"3": "1",
+	})
+}
+
+func TestSortSignal(t *testing.T) {
+	s := &Signal{
+		Lengths: []int{516, 9112, 4152, 2116},
+		Seq:     "01020203",
+	}
+
+	expectedSignal := &Signal{
+		Lengths: []int{516, 2116, 4152, 9112},
+		Seq:     "03020201",
+	}
+
+	sortedSignal, _ := sortSignal(s)
+	require.Equal(t, expectedSignal, sortedSignal)
+}
+
+func TestSortSignal_lengthsAlreadySorted(t *testing.T) {
+	s := &Signal{
+		Lengths: []int{516, 2116, 4152, 9112},
+		Seq:     "0102020101020201020101020102010202020202020202010201010202010202020202020103",
+	}
+
+	sortedSignal, _ := sortSignal(s)
+	require.Equal(t, s, sortedSignal)
 }

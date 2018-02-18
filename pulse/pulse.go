@@ -14,6 +14,8 @@ import (
 
 	"math"
 
+	"log"
+
 	"github.com/bradfitz/slice"
 	"github.com/jckuester/weather-station/protocol"
 	"github.com/pkg/errors"
@@ -38,7 +40,7 @@ type Pair struct {
 func Decode(s *Signal) (interface{}, error) {
 	for _, p := range protocol.Supported() {
 		if matches(s, p) {
-			binary, err := Map(s.Seq, p.Mapping)
+			binary, err := convert(s.Seq, p.Mapping)
 			if err != nil {
 				return nil, err
 			}
@@ -111,9 +113,10 @@ func Prepare(input string) (*Signal, error) {
 // according to the new order of indices.
 func sortSignal(s *Signal) (*Signal, error) {
 	sortedIndices := sortIndices(s.Lengths)
+	log.Println(sortedIndices)
 	sort.Ints(s.Lengths)
 
-	seq, err := changeRepresentation(s.Seq, sortedIndices)
+	seq, err := convert(s.Seq, sortedIndices)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Failed to change the representation of '%s'", s.Seq)
 	}
@@ -125,9 +128,9 @@ func sortSignal(s *Signal) (*Signal, error) {
 }
 
 // sortIndices sorts the indicies of a
-// given array a, i.e. if the array is
-// [200, 600, 500], then it returns [0, 2, 1].
-func sortIndices(a []int) []int {
+// given array a, i.e. iff the array is
+// [200, 600, 500], then it returns [0:0, 1:2, 1:1].
+func sortIndices(a []int) map[string]string {
 	pairs := make([]Pair, len(a))
 
 	for i, e := range a {
@@ -137,37 +140,16 @@ func sortIndices(a []int) []int {
 		return pairs[l].first < pairs[r].first
 	})
 
-	indices := make([]int, len(a))
+	indices := make(map[string]string, len(a))
 
 	for j, p := range pairs {
-		indices[p.second] = j
+		indices[strconv.Itoa(p.second)] = strconv.Itoa(j)
 	}
 	return indices
 }
 
-// Instead of using the pulse lengths themselves, each character of the pulse sequence
-// represents a pulse length by its index in the array of pulse lengths.
-// Therefore, after sorting the pulse lengths array, the representation in the pulse sequence needs to
-// be changed accordingly.
-func changeRepresentation(seq string, mapping []int) (string, error) {
-	var result string
-	var d int
-
-	for d < len(seq) {
-		i, err := strconv.ParseInt(string(seq[d]), 10, 0)
-		if err != nil {
-			return "", err
-		}
-
-		result = fmt.Sprintf("%s%d", result, mapping[i])
-		d++
-	}
-
-	return result, nil
-}
-
-// Map maps a pulse sequence to a binary representation, using a given mapping.
-func Map(seq string, mapping map[string]string) (string, error) {
+// convert maps a pulse sequence to another representation, using a given mapping.
+func convert(seq string, mapping map[string]string) (string, error) {
 	var hadMatch bool
 	var i int
 	var result string
