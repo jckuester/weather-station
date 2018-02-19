@@ -30,9 +30,8 @@ func ToSignedNumber(input string, b int, e int) (int, error) {
 
 	if i == 1 {
 		return toSignedNumberMSBLSB(input, b, e)
-	} else {
-		return toNumberMSBLSB(input, b, e)
 	}
+	return toNumberMSBLSB(input, b, e)
 }
 
 func toSignedNumberMSBLSB(input string, b int, e int) (int, error) {

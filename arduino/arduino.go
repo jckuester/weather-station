@@ -21,12 +21,17 @@ var (
 )
 
 const (
-	ReceiveCmd    = "RF receive 0"
+	// ReceiveCmd is the command that needs to b e sent to the Arduino to start
+	// receiving on Pin 0.
+	ReceiveCmd = "RF receive 0"
+	// ReceivePrefix is the prefix of raw signals read from the device file of the Arduino.
 	ReceivePrefix = "RF receive "
-	Ready         = "ready"
+	// Ready is the statement returned by the Arduino when it's ready
+	// to receive commands.
+	Ready = "ready"
 )
 
-// Arduino represents the device file of an Arduino
+// Device represents the device file of an Arduino
 // connected to the USB port.
 type Device struct {
 	file   afero.File
@@ -74,27 +79,27 @@ func (d *Device) Read(p Processor) error {
 
 // Write writes a command to the device file
 // (e.g. to tell the Arduino to start receiving signals).
-func (m *Device) Write(cmd string) error {
-	if atomic.LoadInt32(&m.opened) != 1 {
+func (d *Device) Write(cmd string) error {
+	if atomic.LoadInt32(&d.opened) != 1 {
 		return errors.New("Device needs to be opened")
 	}
-	b, err := m.file.WriteString(fmt.Sprintf("%s\n", cmd))
+	b, err := d.file.WriteString(fmt.Sprintf("%s\n", cmd))
 	if err != nil {
 		log.Println(err)
 		return err
 	}
-	log.Printf("Wrote command '%s' to '%s' (%d bytes)\n", cmd, m.file.Name(), b)
+	log.Printf("Wrote command '%s' to '%s' (%d bytes)\n", cmd, d.file.Name(), b)
 
-	m.file.Sync()
+	d.file.Sync()
 
 	return nil
 }
 
 // Close closes the opened device file.
-func (m *Device) Close() error {
-	log.Printf("Closing '%v'", m.file.Name())
-	atomic.StoreInt32(&m.opened, 0)
-	return m.file.Close()
+func (d *Device) Close() error {
+	log.Printf("Closing '%v'", d.file.Name())
+	atomic.StoreInt32(&d.opened, 0)
+	return d.file.Close()
 }
 
 // Processor defines a function that can be applied

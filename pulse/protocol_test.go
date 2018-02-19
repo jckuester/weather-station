@@ -1,4 +1,4 @@
-package protocol
+package pulse
 
 import (
 	"testing"
@@ -9,8 +9,8 @@ import (
 func TestDecode_weather15(t *testing.T) {
 	bits := "1001100101100010000011001000010000111"
 
-	d, _ := Supported()[0].Decode(bits)
-	m := d.(*Measurement)
+	result, _ := Protocols()["protocol1"].Decode(bits)
+	m := result.(*GTWT01Result)
 
 	assert.Equal(t, 67, m.Humidity, "Humidity")
 	assert.Equal(t, 20.0, m.Temperature, "Temperature")

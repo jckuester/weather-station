@@ -9,7 +9,6 @@ import (
 	"strings"
 
 	"github.com/jckuester/weather-station/arduino"
-	"github.com/jckuester/weather-station/protocol"
 	"github.com/jckuester/weather-station/pulse"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -81,6 +80,7 @@ func receive(device *string) {
 // when the Arduino is ready to receive commands.
 type Ready struct{}
 
+// Process reads from the Arduino until it returns "ready".
 func (Ready) Process(s string) bool {
 	if strings.Contains(s, arduino.Ready) {
 		return false
@@ -93,6 +93,8 @@ func (Ready) Process(s string) bool {
 // based on the decoded values.
 type DecodedSignal struct{}
 
+// Process tries to decode a compressed signal read from the Arduino,
+// by using all currently supported protocols.
 func (DecodedSignal) Process(line string) bool {
 	if strings.HasPrefix(line, arduino.ReceivePrefix) {
 		trimmed := strings.TrimPrefix(line, arduino.ReceivePrefix)
@@ -109,7 +111,7 @@ func (DecodedSignal) Process(line string) bool {
 		}
 
 		if m != nil {
-			m := m.(*protocol.Measurement)
+			m := m.(*pulse.GTWT01Result)
 			log.Printf("%+v\n", *m)
 
 			if t, ok := temperature[m.Id]; ok {

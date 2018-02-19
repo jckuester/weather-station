@@ -17,7 +17,6 @@ import (
 	"log"
 
 	"github.com/bradfitz/slice"
-	"github.com/jckuester/weather-station/protocol"
 	"github.com/pkg/errors"
 )
 
@@ -38,7 +37,7 @@ type Pair struct {
 // Decode tries to decode a received Signal
 // based on all currently supported protocols.
 func Decode(s *Signal) (interface{}, error) {
-	for _, p := range protocol.Supported() {
+	for _, p := range Protocols() {
 		if matches(s, p) {
 			binary, err := convert(s.Seq, p.Mapping)
 			if err != nil {
@@ -52,7 +51,7 @@ func Decode(s *Signal) (interface{}, error) {
 
 // matches checks whether a received Signal matches
 // a protocol.
-func matches(s *Signal, p *protocol.Protocol) bool {
+func matches(s *Signal, p *Protocol) bool {
 	var i int
 	var maxDelta float64
 
@@ -86,7 +85,7 @@ func matches(s *Signal, p *protocol.Protocol) bool {
 func Prepare(input string) (*Signal, error) {
 	parts := strings.Split(input, " ")
 	if len(parts) < 8 {
-		return nil, errors.New(fmt.Sprintf("Incorrect number of pulse lengths: %s", input))
+		return nil, fmt.Errorf("Incorrect number of pulse lengths: %s", input)
 	}
 	lengths := parts[:8]
 	seq := parts[8]
@@ -97,7 +96,7 @@ func Prepare(input string) (*Signal, error) {
 
 	lengthsInts, err := toIntArray(lengths)
 	if err != nil {
-		return nil, errors.New(fmt.Sprintf("Cannot convert pulse lengths to integers: %s", lengths))
+		return nil, fmt.Errorf("Cannot convert pulse lengths to integers: %s", lengths)
 	}
 
 	return sortSignal(
@@ -167,7 +166,7 @@ func convert(seq string, mapping map[string]string) (string, error) {
 			}
 		}
 		if !hadMatch {
-			return "", errors.New(fmt.Sprintf("Unable to apply mapping to pulse sequence %s", seq))
+			return "", fmt.Errorf("Unable to apply mapping to pulse sequence %s", seq)
 		}
 	}
 

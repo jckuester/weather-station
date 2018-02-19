@@ -1,13 +1,10 @@
-// Package protocol contains supported protocols that
-// can be used to decode signals received via the
-// https://github.com/pimatic/RFControl library.
-package protocol
+package pulse
 
 import (
 	"github.com/jckuester/weather-station/binary"
 )
 
-// Protocol defines a protocol that is used to match
+// Protocol defines a protocol that can be used to match
 // received signals and decode them.
 type Protocol struct {
 	Device    string                            // the type of device that uses the protocol
@@ -17,23 +14,13 @@ type Protocol struct {
 	Decode    func(string) (interface{}, error) // decodes the binary representation into a human-readable struct
 }
 
-// Measurement is the result of a decoded pulse
-// of the protocol for the "Globaltronics GT-WT-01 variant".
-type Measurement struct {
-	Id          int
-	Channel     int
-	Temperature float64
-	Humidity    int
-	LowBattery  bool
-}
-
-// Supported returns a list of all the currently supported
+// Protocols returns a list of all the currently supported
 // protocols that can be used for trying to decode received signals.
-func Supported() []*Protocol {
-	return []*Protocol{
+func Protocols() map[string]*Protocol {
+	return map[string]*Protocol{
 		// Only one protocol supported right now
 		// (see: https://github.com/pimatic/rfcontroljs/blob/master/src/protocols/weather15.coffee)
-		{
+		"protocol1": {
 			Device:    "Globaltronics GT-WT-01 variant",
 			SeqLength: []int{76},
 			Lengths:   []int{496, 2048, 4068, 8960},
@@ -63,7 +50,7 @@ func Supported() []*Protocol {
 					return nil, err
 				}
 
-				return &Measurement{
+				return &GTWT01Result{
 					Id:          id,
 					Channel:     channel + 1,
 					Temperature: float64(temp) / 10,
@@ -73,4 +60,14 @@ func Supported() []*Protocol {
 			},
 		},
 	}
+}
+
+// GTWT01Result is the human-readable result of a decoded pulse
+// for the "GT-WT-01 variant".
+type GTWT01Result struct {
+	Id          int
+	Channel     int
+	Temperature float64
+	Humidity    int
+	LowBattery  bool
 }
