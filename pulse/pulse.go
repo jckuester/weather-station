@@ -14,8 +14,6 @@ import (
 
 	"math"
 
-	"log"
-
 	"github.com/bradfitz/slice"
 	"github.com/pkg/errors"
 )
@@ -112,7 +110,6 @@ func Prepare(input string) (*Signal, error) {
 // according to the new order of indices.
 func sortSignal(s *Signal) (*Signal, error) {
 	sortedIndices := sortIndices(s.Lengths)
-	log.Println(sortedIndices)
 	sort.Ints(s.Lengths)
 
 	seq, err := convert(s.Seq, sortedIndices)

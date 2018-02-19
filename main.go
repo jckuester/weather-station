@@ -20,8 +20,7 @@ var (
 		Default("/dev/ttyUSB0").String()
 	listenAddr = kingpin.Flag("listen-address", "The address to listen on for HTTP requests.").
 			Default(":8080").String()
-	ids = kingpin.Arg("ids", "Device ids of the temperature/humidity sensors").
-		Required().Ints()
+	ids = kingpin.Arg("ids", "Device ids of the sensors").Ints()
 
 	temperature = make(map[int]prometheus.Gauge)
 	humidity    = make(map[int]prometheus.Gauge)
@@ -103,15 +102,14 @@ func (DecodedSignal) Process(line string) bool {
 		if err != nil {
 			log.Println(err)
 		}
-		log.Printf("%+v\n", *p)
 
-		m, err := pulse.Decode(p)
+		result, err := pulse.Decode(p)
 		if err != nil {
 			log.Println(err)
 		}
 
-		if m != nil {
-			m := m.(*pulse.GTWT01Result)
+		if result != nil {
+			m := result.(*pulse.GTWT01Result)
 			log.Printf("%+v\n", *m)
 
 			if t, ok := temperature[m.Id]; ok {
