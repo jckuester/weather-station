@@ -101,11 +101,13 @@ func (DecodedSignal) Process(line string) bool {
 		p, err := pulse.Prepare(trimmed)
 		if err != nil {
 			log.Println(err)
+			return true
 		}
 
 		result, err := pulse.Decode(p)
 		if err != nil {
 			log.Println(err)
+			return true
 		}
 
 		if result != nil {
