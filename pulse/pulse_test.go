@@ -4,7 +4,6 @@ import (
 	"log"
 	"testing"
 
-	"github.com/jckuester/weather-station/protocol"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -14,7 +13,7 @@ func TestMatches(t *testing.T) {
 		Lengths: []int{516, 2116, 4152, 9112},
 		Seq:     "0102020101020201020101020102010202020202020202010201010202010202020202020103",
 	}
-	p := &protocol.Protocol{
+	p := &Protocol{
 		SeqLength: []int{76},
 		Lengths:   []int{496, 2048, 4068, 8960},
 	}
@@ -27,7 +26,7 @@ func TestMatches_pulseSeqTooShort(t *testing.T) {
 		Lengths: []int{516, 2116, 4152, 9112},
 		Seq:     "010202010102020102",
 	}
-	p := &protocol.Protocol{
+	p := &Protocol{
 		SeqLength: []int{76},
 		Lengths:   []int{496, 2048, 4068, 8960},
 	}
@@ -40,7 +39,7 @@ func TestMatches_pulseLengthDeviationTooHigh(t *testing.T) {
 		Lengths: []int{516, 2116, 4152, 9112},
 		Seq:     "0102020101020201020101020102010202020202020202010201010202010202020202020103",
 	}
-	p := &protocol.Protocol{
+	p := &Protocol{
 		SeqLength: []int{76},
 		Lengths:   []int{496, 2048, 2000, 8960},
 	}
@@ -53,7 +52,7 @@ func TestMatches_numberOfPuleLengthDiffer(t *testing.T) {
 		Lengths: []int{516, 2116, 4152, 9112},
 		Seq:     "0102020101020201020101020102010202020202020202010201010202010202020202020103",
 	}
-	p := &protocol.Protocol{
+	p := &Protocol{
 		SeqLength: []int{76},
 		Lengths:   []int{496, 2048, 2000},
 	}

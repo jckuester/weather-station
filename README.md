@@ -5,6 +5,9 @@
   <img src="https://goreportcard.com/badge/github.com/cloudetc/awsweeper" /></a>
   <a href="https://godoc.org/github.com/jckuester/weather-station">
   <img src="https://godoc.org/github.com/cloudetc/awsweeper?status.svg" /></a>
+  <a href="https://codecov.io/gh/jckuester/weather-station">
+  <img src="https://codecov.io/gh/jckuester/weather-station/branch/master/graph/badge.svg" />
+  </a>
 </p>
 
 <p>
@@ -30,7 +33,7 @@
  crossing it raises an alert in Slack).</em>
 </p>
 
-This is an opinionated (and affordable) setup to measure and log temperature and humidity around my house. Opinionated 
+This is an opinionated (and affordable) setup to measure and log temperature and humidity around the house. Opinionated 
 because I like Go, Prometheus, and Grafana. Affordable because each sensor costs around 10 Euros.
  
 So, in a nutshell, this repo offers you a prometheus exporter for 433 MHz temperature/humidity sensors, where
@@ -64,7 +67,7 @@ can easily be added to the [supported protocols](pulse/protocol.go) of this proj
 
 ## Download
 
-Get the binary for your repo [here]().
+Get the binary for the Raspberry Pi (ARM) or other platforms [here](https://github.com/cloudetc/awsweeper/releases).
 
 ## Usage
 
@@ -84,7 +87,7 @@ Args:
 Starting the exporter:
 
 1) At first, simply start the exporter without any IDs. 
-The logs will show all signals that the exporter is able to decode, but nothing is exported.
+The logs will show any signals that the exporter is able to decode, but nothing is exported yet.
 
     ```
     $ ./weather-station
@@ -110,7 +113,7 @@ Here is [my version of the Grafana dashboard](./grafana-dashboard.json) that you
 
 ## Credits
 
-* Idea and code of this [CO2 Prometheus exporter](https://github.com/larsp/co2monitor),
+* Idea and code of this [CO2 Prometheus exporter](https://github.com/larsp/co2monitor)
 has been an inspiration and starting point for this project.
 
 * All that hard work of reverse engineering the protocols and finding the correct decodings has been 
