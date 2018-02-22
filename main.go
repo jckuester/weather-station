@@ -20,7 +20,7 @@ var (
 		Default("/dev/ttyUSB0").String()
 	listenAddr = kingpin.Flag("listen-address", "The address to listen on for HTTP requests.").
 			Default(":8080").String()
-	ids = kingpin.Arg("ids", "Device ids of the sensors").Ints()
+	ids = kingpin.Arg("ids", "Sensor IDs that will be exported").Ints()
 
 	temperature = make(map[int]prometheus.Gauge)
 	humidity    = make(map[int]prometheus.Gauge)
@@ -59,16 +59,19 @@ func receive(device *string) {
 		log.Fatalf("Could not open '%v'", *device)
 	}
 
+	// wait until the Arduino is ready to accept commands
 	err = a.Read(Ready{})
 	if err != nil {
 		log.Fatalf("Device is not ready to take commands: %s", err)
 	}
 
+	// tell the Arduino to start receiving signals
 	err = a.Write(arduino.ReceiveCmd)
 	if err != nil {
 		log.Fatalf("Could not write to '%v'", *device)
 	}
 
+	// read and decode received signals forever
 	err = a.Read(DecodedSignal{})
 	if err != nil {
 		log.Println(err)
@@ -76,7 +79,7 @@ func receive(device *string) {
 }
 
 // Ready implements a Processor that waits and returns
-// when the Arduino is ready to receive commands.
+// as soon as the Arduino is ready to accept commands.
 type Ready struct{}
 
 // Process reads from the Arduino until it returns "ready".
@@ -92,8 +95,8 @@ func (Ready) Process(s string) bool {
 // based on the decoded values.
 type DecodedSignal struct{}
 
-// Process tries to decode a compressed signal read from the Arduino,
-// by using all currently supported protocols.
+// Process decodes a compressed signal read from the Arduino
+// by trying all currently supported protocols.
 func (DecodedSignal) Process(line string) bool {
 	if strings.HasPrefix(line, arduino.ReceivePrefix) {
 		trimmed := strings.TrimPrefix(line, arduino.ReceivePrefix)
