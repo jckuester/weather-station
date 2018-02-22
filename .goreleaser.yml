@@ -1,0 +1,13 @@
+builds:
+  - binary: awsweeper
+    goos:
+      - windows
+      - darwin
+      - linux
+    goarch:
+      - amd64
+      - arm
+      - arm64
+    goarm:
+      - 6
+      - 7

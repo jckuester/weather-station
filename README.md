@@ -26,8 +26,8 @@
 
 <p>
  <img src="img/humidity.png" alt="Humidity inside (last 24h)">
- <em>Figure 4: Humidity inside rooms and piano (the upper red line is defines a threshold;
- crossing it will raise an alert in Slack).</em>
+ <em>Figure 4: Humidity inside rooms and piano (the upper red line defines a threshold;
+ crossing it raises an alert in Slack).</em>
 </p>
 
 This is an opinionated (and affordable) setup to measure and log temperature and humidity around my house. Opinionated 
