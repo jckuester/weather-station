@@ -48,7 +48,7 @@ You see it all in Figure 1:
 * Raspberry Pi
 * Arduino Nano
 * [RF unit](https://www.amazon.de/gp/product/B06XHJMC82/ref=oh_aui_detailpage_o00_s00?ie=UTF8&psc=1) for the Arduino
- (don't try to safe a few dollars by buying a cheapest one; it has a very tiny range)
+ (don't try to save a few dollars by buying a cheapest one; it has a very tiny range)
 * [GT-WT-01 temperature/humidity sensors](https://www.teknihall.be/en/node/1430)
 (get as many as you like; I bought six on [eBay](https://www.ebay.com/itm/361435018543): one for outside, one for every room, one for the fridge, one inside my piano, etc.)
 
