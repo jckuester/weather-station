@@ -5,13 +5,11 @@
   <img src="https://goreportcard.com/badge/github.com/cloudetc/awsweeper" /></a>
   <a href="https://godoc.org/github.com/jckuester/weather-station">
   <img src="https://godoc.org/github.com/cloudetc/awsweeper?status.svg" /></a>
-  <a href="https://codecov.io/gh/jckuester/weather-station">
-  <img src="https://codecov.io/gh/jckuester/weather-station/branch/master/graph/badge.svg" />
   </a>
 </p>
 
 <p>
- <img src="img/hardware.jpg" alt="Hardware for the weather station">
+ <img src="img/hardware.jpg" alt="Hardware of the weather station">
  <em>Figure 1: Hardware in use: Raspberry Pi, Arduino Nano, RXB6 433Mhz receiver,
  and as many GT-WT-01 temperature/humidity sensors as you like.</em>
 </p>
@@ -19,25 +17,28 @@
 <p>
  <img src="img/gauges.png" alt="Grafana dashboard">
  <em>Figure 2: Grafana dashboard showing an overview of current
- temperatures and humidities around the house as well as the status of alerts.</em>
+ temperatures and humidities around the house as well as the status of alerts
+ (e.g., I want to get notified whether my piano is too cold or humid, so I can assure it stays longer tuned).</em>
 </p>
 
 <p>
  <img src="img/fridge.png" alt="Fridge temperature and humidity (last 24h)">
- <em>Figure 3: Temerperature and humidity of the fridge within the last 24h.</em>
+ <em>Figure 3: Temperature and humidity of the fridge within the last 24h (the upper red line defines a threshold of 
+ 9° Celsius; so if the fridge gets too warm I get notified in Slack).</em>
 </p>
 
 <p>
  <img src="img/humidity.png" alt="Humidity inside (last 24h)">
- <em>Figure 4: Humidity inside rooms and piano (the upper red line defines a threshold;
- crossing it raises an alert in Slack).</em>
+ <em>Figure 4: Humidity inside rooms and piano.</em>
 </p>
 
+  
 This is an opinionated (and affordable) setup to measure and log temperature and humidity around the house. Opinionated 
 because I like Go, Prometheus, and Grafana. Affordable because each sensor costs around 10 Euros.
  
 So, in a nutshell, this repo offers you a prometheus exporter for 433 MHz temperature/humidity sensors, where
-signals are received via an Arduino ([with this software flashed to it](https://github.com/pimatic/homeduino#flashing)) connected to the Raspberry Pi.
+signals are received via an Arduino ([with this software flashed to it](https://github.com/pimatic/homeduino#flashing))
+connected to a Raspberry Pi.
 
 Happy measuring!
 
@@ -48,9 +49,9 @@ You see it all in Figure 1:
 * Raspberry Pi
 * Arduino Nano
 * [RF unit](https://www.amazon.de/gp/product/B06XHJMC82/ref=oh_aui_detailpage_o00_s00?ie=UTF8&psc=1) for the Arduino
- (don't try to save a few dollars by buying a cheapest one; it has a very tiny range)
+ (don't try to save a few dollars by buying a cheap one; it has a very tiny range)
 * [GT-WT-01 temperature/humidity sensors](https://www.teknihall.be/en/node/1430)
-(get as many as you like; I bought six on [eBay](https://www.ebay.com/itm/361435018543): one for outside, one for every room, one for the fridge, one inside my piano, etc.)
+(get as many as you like; I bought six on [eBay](https://www.ebay.com/itm/361435018543): one for outside, one for every room, one for the fridge, one for inside my piano, etc.)
 
 ***Update***
 
@@ -67,7 +68,7 @@ can easily be added to the [supported protocols](pulse/protocol.go) of this proj
 
 ## Download
 
-Get the binary for the Raspberry Pi (ARM) or other platforms [here](https://github.com/cloudetc/awsweeper/releases).
+Get the binary for the Raspberry Pi (ARM) or other platforms [here](https://github.com/jckuester/weather-station/releases).
 
 ## Usage
 
@@ -87,7 +88,7 @@ Args:
 Starting the exporter:
 
 1) At first, simply start the exporter without any IDs. 
-The logs will show any signals that the exporter is able to decode, but nothing is exported yet.
+The logs will show all signals that the exporter is able to decode, but nothing is exported yet.
 
     ```
     $ ./weather-station
@@ -116,5 +117,5 @@ Here is [my version of the Grafana dashboard](./grafana-dashboard.json) that you
 * Idea and code of this [CO2 Prometheus exporter](https://github.com/larsp/co2monitor)
 has been an inspiration and starting point for this project.
 
-* All that hard work of reverse engineering the protocols and finding the correct decodings has been 
+* All that hard work of reverse engineering the protocols and finding the correct decodings has been already
 done [by the Pimatic project](https://github.com/pimatic/rfcontroljs).
