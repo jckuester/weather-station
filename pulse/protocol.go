@@ -51,7 +51,7 @@ func Protocols() map[string]*Protocol {
 				}
 
 				return &GTWT01Result{
-					Id:          id,
+					ID:          id,
 					Channel:     channel + 1,
 					Temperature: float64(temp) / 10,
 					Humidity:    humidity,
@@ -65,7 +65,7 @@ func Protocols() map[string]*Protocol {
 // GTWT01Result is the human-readable result of a decoded pulse
 // for the "GT-WT-01 variant".
 type GTWT01Result struct {
-	Id          int
+	ID          int
 	Channel     int
 	Temperature float64
 	Humidity    int

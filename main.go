@@ -84,10 +84,7 @@ type Ready struct{}
 
 // Process reads from the Arduino until it returns "ready".
 func (Ready) Process(s string) bool {
-	if strings.Contains(s, arduino.Ready) {
-		return false
-	}
-	return true
+	return strings.Contains(s, arduino.Ready)
 }
 
 // DecodedSignal implements a Processor that
@@ -117,10 +114,10 @@ func (DecodedSignal) Process(line string) bool {
 			m := result.(*pulse.GTWT01Result)
 			log.Printf("%+v\n", *m)
 
-			if t, ok := temperature[m.Id]; ok {
+			if t, ok := temperature[m.ID]; ok {
 				t.Set(m.Temperature)
 			}
-			if h, ok := humidity[m.Id]; ok {
+			if h, ok := humidity[m.ID]; ok {
 				h.Set(float64(m.Humidity))
 			}
 		}

@@ -18,7 +18,7 @@ type MockedProcessor struct {
 	mock.Mock
 }
 
-func (m MockedProcessor) Process(s string) bool {
+func (m *MockedProcessor) Process(s string) bool {
 	log.Println(s)
 	args := m.Called(s)
 	log.Println(args)
@@ -46,7 +46,7 @@ func TestOpen_DeviceNotExist(t *testing.T) {
 
 func TestRead_DeviceNotOpened(t *testing.T) {
 	d := Device{}
-	err := d.Read(MockedProcessor{})
+	err := d.Read(&MockedProcessor{})
 
 	require.Error(t, err)
 }
@@ -58,7 +58,7 @@ func TestRead_DeviceClosed(t *testing.T) {
 	d.Open(device)
 	d.Close()
 
-	err := d.Read(MockedProcessor{})
+	err := d.Read(&MockedProcessor{})
 
 	require.Error(t, err)
 }
@@ -68,7 +68,7 @@ func TestRead(t *testing.T) {
 	l2 := "some other line to read and process"
 	writeFile(device, l1, l2)
 
-	m := MockedProcessor{}
+	m := &MockedProcessor{}
 	m.On("Process", l1).Return(true).Once()
 	m.On("Process", l2).Return(true).Once()
 
@@ -87,7 +87,7 @@ func TestRead_stopProcessing(t *testing.T) {
 
 	writeFile(device, l1, l2, l3)
 
-	m := MockedProcessor{}
+	m := &MockedProcessor{}
 	m.On("Process", l1).Return(true).Once()
 	m.On("Process", l2).Return(false).Once()
 
