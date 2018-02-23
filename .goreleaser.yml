@@ -1,5 +1,5 @@
 builds:
-  - binary: awsweeper
+  - binary: weather-station
     goos:
       - windows
       - darwin
