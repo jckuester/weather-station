@@ -1,10 +1,14 @@
 # Weather station
 
 <p align="right">
+  <a href="https://github.com/jckuester/weather-station/releases/latest">
+  <img alt="Release" src="https://img.shields.io/github/release/jckuester/weather-station.svg?style=flat-square">
+  </a>
   <a href="https://goreportcard.com/report/github.com/jckuester/weather-station">
-  <img src="https://goreportcard.com/badge/github.com/cloudetc/awsweeper" /></a>
+  <img src="https://goreportcard.com/badge/github.com/cloudetc/awsweeper" />
+  </a>
   <a href="https://godoc.org/github.com/jckuester/weather-station">
-  <img src="https://godoc.org/github.com/cloudetc/awsweeper?status.svg" /></a>
+  <img src="https://godoc.org/github.com/cloudetc/awsweeper?status.svg" />
   </a>
 </p>
 
