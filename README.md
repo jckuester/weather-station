@@ -10,6 +10,9 @@
   <a href="https://godoc.org/github.com/jckuester/weather-station">
   <img src="https://godoc.org/github.com/cloudetc/awsweeper?status.svg" />
   </a>
+  <a href="https://github.com/jckuester/weather-station/blob/master/LICENSE">
+  <img src="https://img.shields.io/github/license/jckuester/weather-station.svg" />  
+  </a>
 </p>
 
 <p>
