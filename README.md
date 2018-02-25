@@ -2,7 +2,10 @@
 
 <p align="right">
   <a href="https://github.com/jckuester/weather-station/releases/latest">
-  <img alt="Release" src="https://img.shields.io/github/release/jckuester/weather-station.svg?style=flat-square">
+  <img alt="Release" src="https://img.shields.io/github/release/jckuester/weather-station.svg">
+  </a>
+  <a href="https://github.com/jckuester/weather-station/master">
+  <img alt="Release" src="https://img.shields.io/travis/jckuester/weather-station/master.svg">
   </a>
   <a href="https://goreportcard.com/report/github.com/jckuester/weather-station">
   <img src="https://goreportcard.com/badge/github.com/cloudetc/awsweeper" />
