@@ -2,19 +2,19 @@
 
 <p align="right">
   <a href="https://github.com/jckuester/weather-station/releases/latest">
-  <img alt="Release" src="https://img.shields.io/github/release/jckuester/weather-station.svg">
+  <img alt="Release" src="https://img.shields.io/github/release/jckuester/weather-station.svg?style=flat-square">
   </a>
   <a href="https://github.com/jckuester/weather-station/master">
-  <img alt="Release" src="https://img.shields.io/travis/jckuester/weather-station/master.svg">
+  <img alt="Release" src="https://img.shields.io/travis/jckuester/weather-station/master.svg?style=flat-square">
   </a>
   <a href="https://goreportcard.com/report/github.com/jckuester/weather-station">
-  <img src="https://goreportcard.com/badge/github.com/cloudetc/awsweeper" />
+  <img src="https://goreportcard.com/badge/github.com/jckuester/weather-station?style=flat-square" />
   </a>
   <a href="https://godoc.org/github.com/jckuester/weather-station">
-  <img src="https://godoc.org/github.com/cloudetc/awsweeper?status.svg" />
+  <img src="https://img.shields.io/badge/godoc-reference-blue.svg?style=flat-square"" />
   </a>
   <a href="https://github.com/jckuester/weather-station/blob/master/LICENSE">
-  <img src="https://img.shields.io/github/license/jckuester/weather-station.svg" />  
+  <img src="https://img.shields.io/github/license/jckuester/weather-station.svg?style=flat-square" />
   </a>
 </p>
 
