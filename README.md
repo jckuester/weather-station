@@ -2,44 +2,47 @@
 
 <p align="right">
   <a href="https://github.com/jckuester/weather-station/releases/latest">
-  <img alt="Release" src="https://img.shields.io/github/release/jckuester/weather-station.svg?style=flat-square">
+    <img alt="Release" src="https://img.shields.io/github/release/jckuester/weather-station.svg?style=flat-square">
   </a>
   <a href="https://github.com/jckuester/weather-station/master">
-  <img alt="Release" src="https://img.shields.io/travis/jckuester/weather-station/master.svg?style=flat-square">
+    <img alt="Release" src="https://img.shields.io/travis/jckuester/weather-station/master.svg?style=flat-square">
   </a>
   <a href="https://goreportcard.com/report/github.com/jckuester/weather-station">
-  <img src="https://goreportcard.com/badge/github.com/jckuester/weather-station?style=flat-square" />
+    <img src="https://goreportcard.com/badge/github.com/jckuester/weather-station?style=flat-square" />
+  </a>
+  <a href="https://codecov.io/gh/jckuester/weather-station">
+    <img src="https://codecov.io/gh/jckuester/weather-station/branch/master/graph/badge.svg?style=flat-square" />
   </a>
   <a href="https://godoc.org/github.com/jckuester/weather-station">
-  <img src="https://img.shields.io/badge/godoc-reference-blue.svg?style=flat-square"" />
+    <img src="https://img.shields.io/badge/godoc-reference-blue.svg?style=flat-square"" />
   </a>
   <a href="https://github.com/jckuester/weather-station/blob/master/LICENSE">
-  <img src="https://img.shields.io/github/license/jckuester/weather-station.svg?style=flat-square" />
+    <img src="https://img.shields.io/github/license/jckuester/weather-station.svg?style=flat-square" />
   </a>
 </p>
 
 <p>
- <img src="img/hardware.jpg" alt="Hardware of the weather station">
- <em>Figure 1: Hardware in use: Raspberry Pi, Arduino Nano, RXB6 433Mhz receiver,
- and as many GT-WT-01 temperature/humidity sensors as you like.</em>
+  <img src="img/hardware.jpg" alt="Hardware of the weather station">
+  <em>Figure 1: Hardware in use: Raspberry Pi, Arduino Nano, RXB6 433Mhz receiver,
+  and as many GT-WT-01 temperature/humidity sensors as you like.</em>
 </p>
 
 <p>
- <img src="img/gauges.png" alt="Grafana dashboard">
- <em>Figure 2: Grafana dashboard showing an overview of current
- temperatures and humidities around the house as well as the status of alerts
- (e.g., I want to get notified whether my piano is too cold or humid, so I can assure it stays longer tuned).</em>
+  <img src="img/gauges.png" alt="Grafana dashboard">
+  <em>Figure 2: Grafana dashboard showing an overview of current
+  temperatures and humidities around the house as well as the status of alerts
+  (e.g., I want to get notified whether my piano is too cold or humid, so I can assure it stays longer tuned).</em>
 </p>
 
 <p>
- <img src="img/fridge.png" alt="Fridge temperature and humidity (last 24h)">
- <em>Figure 3: Temperature and humidity of the fridge within the last 24h (the upper red line defines a threshold of 
- 9° Celsius; so if the fridge gets too warm I get notified in Slack).</em>
+  <img src="img/fridge.png" alt="Fridge temperature and humidity (last 24h)">
+  <em>Figure 3: Temperature and humidity of the fridge within the last 24h (the upper red line defines a threshold of 
+  9° Celsius; so if the fridge gets too warm I get notified in Slack).</em>
 </p>
 
 <p>
- <img src="img/humidity.png" alt="Humidity inside (last 24h)">
- <em>Figure 4: Humidity inside rooms and piano.</em>
+  <img src="img/humidity.png" alt="Humidity inside (last 24h)">
+  <em>Figure 4: Humidity inside rooms and piano.</em>
 </p>
 
   
