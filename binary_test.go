@@ -1,9 +1,8 @@
-package binary
+package main
 
 import (
-	"testing"
-
 	"github.com/stretchr/testify/require"
+	"testing"
 )
 
 func TestToSignedNumber_positive(t *testing.T) {

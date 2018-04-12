@@ -1,18 +1,13 @@
 package main
 
 import (
-	"log"
-	"net/http"
-
-	"fmt"
-
-	"strings"
-
-	"github.com/jckuester/weather-station/arduino"
-	"github.com/jckuester/weather-station/pulse"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"golang.org/x/net/context"
 	"gopkg.in/alecthomas/kingpin.v2"
+	"log"
+	"net/http"
+	"strings"
 )
 
 var (
@@ -20,107 +15,109 @@ var (
 		Default("/dev/ttyUSB0").String()
 	listenAddr = kingpin.Flag("listen-address", "The address to listen on for HTTP requests.").
 			Default(":8080").String()
-	ids = kingpin.Arg("ids", "Sensor IDs that will be exported").Ints()
+	ids = kingpin.Arg("ids", "Sensor IDs that will be exported").StringMap()
 
-	temperature = make(map[int]prometheus.Gauge)
-	humidity    = make(map[int]prometheus.Gauge)
+	temperature *prometheus.GaugeVec
+	humidity    *prometheus.GaugeVec
+	sensors     map[string]string
+)
+
+const (
+	SENSOR_ID       = "id"
+	SENSOR_LOCATION = "location"
 )
 
 func main() {
 	kingpin.Parse()
 
-	for _, i := range *ids {
-		temperature[i] = prometheus.NewGauge(prometheus.GaugeOpts{
-			Name: fmt.Sprintf("meter_temperature_celsius_%d", i),
-			Help: "Current temperature in Celsius",
-		})
-		humidity[i] = prometheus.NewGauge(prometheus.GaugeOpts{
-			Name: fmt.Sprintf("meter_humidity_percent_%d", i),
-			Help: "Current humidity level in %",
-		})
+	sensors = *ids
 
-		prometheus.MustRegister(temperature[i])
-		prometheus.MustRegister(humidity[i])
-	}
+	temperature = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "meter_temperature_celsius",
+		Help: "Current temperature in Celsius",
+	}, []string{
+		SENSOR_ID,
+		SENSOR_LOCATION,
+	})
+	humidity = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "meter_humidity_percent",
+		Help: "Current humidity level in %",
+	}, []string{
+		SENSOR_ID,
+		SENSOR_LOCATION,
+	})
+
+	prometheus.MustRegister(temperature)
+	prometheus.MustRegister(humidity)
 
 	http.Handle("/metrics", promhttp.Handler())
 
-	go receive(device)
+	dev, err := OpenDevice(*device)
+	if err != nil {
+		log.Fatalf("Could not open '%v'", *device)
+	}
+	defer dev.Close()
+
+	err = dev.Ping()
+	if err != nil {
+		log.Fatalln("Error on Ping", err)
+	}
+	go receive(dev)
 
 	log.Printf("Serving metrics at '%v/metrics'", *listenAddr)
 	log.Fatal(http.ListenAndServe(*listenAddr, nil))
 }
 
-func receive(device *string) {
-	a := &arduino.Device{}
-
-	err := a.Open(*device)
-	if err != nil {
-		log.Fatalf("Could not open '%v'", *device)
-	}
-
-	// wait until the Arduino is ready to accept commands
-	err = a.Read(Ready{})
-	if err != nil {
-		log.Fatalf("Device is not ready to take commands: %s", err)
-	}
-
+func receive(a *Device) {
 	// tell the Arduino to start receiving signals
-	err = a.Write(arduino.ReceiveCmd)
+	err := a.Write(ReceiveCmd)
 	if err != nil {
-		log.Fatalf("Could not write to '%v'", *device)
+		log.Fatalf("Could not write to '%v'", a)
 	}
+	log.Println("Write", ReceiveCmd)
 
+	ctx := context.Background()
 	// read and decode received signals forever
-	err = a.Read(DecodedSignal{})
+	err = a.Process(ctx, DecodedSignal)
 	if err != nil {
 		log.Println(err)
 	}
 }
 
-// Ready implements a Processor that waits and returns
-// as soon as the Arduino is ready to accept commands.
-type Ready struct{}
-
-// Process reads from the Arduino until it returns "ready".
-func (Ready) Process(s string) bool {
-	return strings.Contains(s, arduino.Ready)
-}
-
-// DecodedSignal implements a Processor that
-// decodes received raw signals and sets the Prometheus Gauge
-// based on the decoded values.
-type DecodedSignal struct{}
-
 // Process decodes a compressed signal read from the Arduino
 // by trying all currently supported protocols.
-func (DecodedSignal) Process(line string) bool {
-	if strings.HasPrefix(line, arduino.ReceivePrefix) {
-		trimmed := strings.TrimPrefix(line, arduino.ReceivePrefix)
+func DecodedSignal(line string) {
+	if strings.HasPrefix(line, ReceivePrefix) {
+		trimmed := strings.TrimPrefix(line, ReceivePrefix)
 
-		p, err := pulse.Prepare(trimmed)
+		p, err := PreparePulse(trimmed)
 		if err != nil {
 			log.Println(err)
-			return true
+			return
 		}
 
-		result, err := pulse.Decode(p)
+		device, result, err := DecodePulse(p)
 		if err != nil {
 			log.Println(err)
-			return true
+			return
 		}
 
-		if result != nil {
-			m := result.(*pulse.GTWT01Result)
-			log.Printf("%+v\n", *m)
+		switch device {
+		case GT_WT_01:
+			m := result.(*GTWT01Result)
+			log.Printf("%v: %+v\n", device, *m)
+			temperature.With(prometheus.Labels{
+				SENSOR_ID:       m.Name,
+				SENSOR_LOCATION: sensors[m.Name],
+			}).Set(m.Temperature)
 
-			if t, ok := temperature[m.ID]; ok {
-				t.Set(m.Temperature)
-			}
-			if h, ok := humidity[m.ID]; ok {
-				h.Set(float64(m.Humidity))
-			}
+			humidity.With(prometheus.Labels{
+				SENSOR_ID:       m.Name,
+				SENSOR_LOCATION: sensors[m.Name],
+			}).Set(float64(m.Humidity))
+		default:
+			log.Println("Device", device)
 		}
 	}
-	return true
+	return
 }

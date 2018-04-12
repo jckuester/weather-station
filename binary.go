@@ -1,6 +1,6 @@
 // Package binary implements some binary operations
 // for decoding received pulse sequences.
-package binary
+package main
 
 import (
 	"strconv"
