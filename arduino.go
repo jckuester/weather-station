@@ -28,7 +28,10 @@ const (
 	// ReceivePrefix is the prefix of raw signals read from the device file of the Arduino.
 	ReceivePrefix = "RF receive "
 
-	PingCmd = "PING pong"
+	PingCmd  = "PING pong"
+	ResetCmd = "RESET"
+
+	ResetCmdResponse = "ready"
 )
 
 type ProcessorFunc func(s string)
@@ -55,11 +58,12 @@ func OpenDevice(name string) (*Device, error) {
 		Mutex: sync.Mutex{},
 	}
 
+	err = d.reset()
 	return d, nil
 }
 
-func (d *Device) Ping() error {
-	err := d.Write(PingCmd)
+func (d *Device) reset() error {
+	err := d.Write(ResetCmd)
 	if err != nil {
 		return err
 	}
@@ -67,8 +71,8 @@ func (d *Device) Ping() error {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	err = d.Process(ctx, func(s string) {
-		for !strings.Contains(s, PingCmd) {
-			log.Println("Not Ping msg:", s)
+		for !strings.EqualFold(s, ResetCmdResponse) {
+			log.Printf("Not %v msg: %v\n", ResetCmdResponse, s)
 			return
 		}
 		cancel()

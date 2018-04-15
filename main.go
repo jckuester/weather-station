@@ -58,10 +58,6 @@ func main() {
 	}
 	defer dev.Close()
 
-	err = dev.Ping()
-	if err != nil {
-		log.Fatalln("Error on Ping", err)
-	}
 	go receive(dev)
 
 	log.Printf("Serving metrics at '%v/metrics'", *listenAddr)
