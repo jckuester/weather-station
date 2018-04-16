@@ -1,9 +1,9 @@
 package main
 
 import (
+	"context"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"golang.org/x/net/context"
 	"gopkg.in/alecthomas/kingpin.v2"
 	"log"
 	"net/http"
