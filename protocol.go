@@ -1,16 +1,27 @@
-package pulse
+package main
 
 import (
-	"github.com/jckuester/weather-station/binary"
+	"fmt"
+	"strconv"
+)
+
+//go:generate stringer -type DeviceType
+
+type DeviceType uint8
+
+const (
+	Unknown DeviceType = iota
+	GT_WT_01
 )
 
 // Protocol defines a protocol that can be used to match
 // received signals and decode them.
 type Protocol struct {
-	Device    string                            // the type of device that uses the protocol
-	SeqLength []int                             // allowed lengths of the sequence of pulses
-	Lengths   []int                             // pulse lengths
-	Mapping   map[string]string                 // maps the pulse sequence into binary representation (i.e. 0s and 1s)
+	Device    string            // the type of device that uses the protocol
+	SeqLength []int             // allowed lengths of the sequence of pulses
+	Lengths   []int             // pulse lengths
+	Mapping   map[string]string // maps the pulse sequence into binary representation (i.e. 0s and 1s)
+	Type      DeviceType
 	Decode    func(string) (interface{}, error) // decodes the binary representation into a human-readable struct
 }
 
@@ -29,33 +40,35 @@ func Protocols() map[string]*Protocol {
 				"02": "1",
 				"03": "",
 			},
+			Type: GT_WT_01,
 			Decode: func(binSeq string) (interface{}, error) {
-				id, err := binary.ToNumber(binSeq, 0, 12)
+				id, err := strconv.ParseUint(binSeq[0:12], 2, 0)
 				if err != nil {
 					return nil, err
 				}
 
-				channel, err := binary.ToNumber(binSeq, 14, 16)
+				channel, err := strconv.ParseUint(binSeq[14:16], 2, 0)
 				if err != nil {
 					return nil, err
 				}
 
-				temp, err := binary.ToSignedNumber(binSeq, 16, 27)
+				temp, err := strconv.ParseInt(binSeq[16:28], 2, 0)
 				if err != nil {
 					return nil, err
 				}
 
-				humidity, err := binary.ToNumber(binSeq, 28, 36)
+				humidity, err := strconv.ParseInt(binSeq[28:36], 2, 0)
 				if err != nil {
 					return nil, err
 				}
 
 				return &GTWT01Result{
-					ID:          id,
-					Channel:     channel + 1,
+					ID:          int(id),
+					Name:        fmt.Sprint(id),
+					Channel:     int(channel) + 1,
 					Temperature: float64(temp) / 10,
-					Humidity:    humidity,
-					LowBattery:  binary.ToBoolean(binSeq, 12),
+					Humidity:    int(humidity),
+					LowBattery:  ToBoolean(binSeq, 12),
 				}, nil
 			},
 		},
@@ -66,6 +79,7 @@ func Protocols() map[string]*Protocol {
 // for the "GT-WT-01 variant".
 type GTWT01Result struct {
 	ID          int
+	Name        string
 	Channel     int
 	Temperature float64
 	Humidity    int

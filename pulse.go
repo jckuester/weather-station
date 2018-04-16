@@ -2,20 +2,16 @@
 // received via the Arduino library https://github.com/pimatic/RFControl.
 //
 // For decoding details see also https://github.com/pimatic/rfcontroljs#details.
-package pulse
+package main
 
 import (
-	"strconv"
-	"strings"
-
-	"sort"
-
 	"fmt"
-
-	"math"
-
 	"github.com/bradfitz/slice"
 	"github.com/pkg/errors"
+	"math"
+	"sort"
+	"strconv"
+	"strings"
 )
 
 // Signal implements a received 433 MHz signal of compressed raw time series
@@ -32,19 +28,20 @@ type Pair struct {
 	second int
 }
 
-// Decode tries to decode a received Signal
+// DecodePulse tries to decode a received Signal
 // based on all currently supported protocols.
-func Decode(s *Signal) (interface{}, error) {
+func DecodePulse(s *Signal) (DeviceType, interface{}, error) {
 	for _, p := range Protocols() {
 		if matches(s, p) {
 			binary, err := convert(s.Seq, p.Mapping)
 			if err != nil {
-				return nil, err
+				return p.Type, nil, err
 			}
-			return p.Decode(binary)
+			i, err := p.Decode(binary)
+			return p.Type, i, err
 		}
 	}
-	return nil, nil
+	return Unknown, nil, nil
 }
 
 // matches checks whether a received Signal matches
@@ -74,13 +71,13 @@ func matches(s *Signal, p *Protocol) bool {
 	return true
 }
 
-// Prepare takes an compressed signal as input,
+// PreparePulse takes an compressed signal as input,
 // 1) splits it into pulse lengths and pulse sequence,
 // 2) removes pulse lengths that are 0,
 // 3) sorts the pulse lengths in ascending order, and
 // 4) rearranges the pulse sequence, which characters each is a pulse length
 // represented by its index in the array of pulse lengths.
-func Prepare(input string) (*Signal, error) {
+func PreparePulse(input string) (*Signal, error) {
 	parts := strings.Split(input, " ")
 	if len(parts) < 8 {
 		return nil, fmt.Errorf("Incorrect number of pulse lengths: %s", input)
