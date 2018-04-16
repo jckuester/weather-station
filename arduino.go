@@ -58,20 +58,18 @@ func OpenDevice(name string) (*Device, error) {
 		Mutex: sync.Mutex{},
 	}
 
-	err = d.reset()
 	return d, nil
 }
 
-func (d *Device) reset() error {
+func (d *Device) Reset() error {
 	err := d.Write(ResetCmd)
 	if err != nil {
 		return err
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
-
 	err = d.Process(ctx, func(s string) {
-		for !strings.EqualFold(s, ResetCmdResponse) {
+		for !strings.EqualFold(s, ResetCmdResponse){
 			log.Printf("Not %v msg: %v\n", ResetCmdResponse, s)
 			return
 		}

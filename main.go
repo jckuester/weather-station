@@ -58,6 +58,11 @@ func main() {
 	}
 	defer dev.Close()
 
+	err = dev.Reset()
+	if err != nil {
+		log.Fatalf("Could not reset '%v'", *device)
+	}
+
 	go receive(dev)
 
 	log.Printf("Serving metrics at '%v/metrics'", *listenAddr)
