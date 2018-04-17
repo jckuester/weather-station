@@ -17,9 +17,9 @@ var (
 			Default(":8080").String()
 	ids = kingpin.Arg("ids", "Sensor IDs that will be exported").StringMap()
 
-	temperature *prometheus.GaugeVec
-	humidity    *prometheus.GaugeVec
-	sensors     map[string]string
+	temperature     *prometheus.GaugeVec
+	humidity        *prometheus.GaugeVec
+	sensorLocations map[string]string
 )
 
 const (
@@ -30,7 +30,7 @@ const (
 func main() {
 	kingpin.Parse()
 
-	sensors = *ids
+	sensorLocations = *ids
 
 	temperature = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "meter_temperature_celsius",
@@ -109,14 +109,19 @@ func DecodedSignal(line string) (stop bool) {
 		case GT_WT_01:
 			m := result.(*GTWT01Result)
 			log.Printf("%v: %+v\n", device, *m)
+			if loc, ok := sensorLocations[m.Name]; !ok || loc == "" {
+				log.Println("Sensor hasn't set a location and won't be provided to Prometheus for monitoring")
+				return
+			}
+
 			temperature.With(prometheus.Labels{
 				SensorID:       m.Name,
-				SensorLocation: sensors[m.Name],
+				SensorLocation: sensorLocations[m.Name],
 			}).Set(m.Temperature)
 
 			humidity.With(prometheus.Labels{
 				SensorID:       m.Name,
-				SensorLocation: sensors[m.Name],
+				SensorLocation: sensorLocations[m.Name],
 			}).Set(float64(m.Humidity))
 		default:
 			log.Println("Device", device)
