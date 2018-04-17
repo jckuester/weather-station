@@ -62,13 +62,18 @@ func Protocols() map[string]*Protocol {
 					return nil, err
 				}
 
+				lowBattery, err := strconv.ParseBool(string(binSeq[12]))
+				if err != nil {
+					return nil, err
+				}
+
 				return &GTWT01Result{
 					ID:          int(id),
 					Name:        fmt.Sprint(id),
 					Channel:     int(channel) + 1,
 					Temperature: float64(temp) / 10,
 					Humidity:    int(humidity),
-					LowBattery:  ToBoolean(binSeq, 12),
+					LowBattery:  lowBattery,
 				}, nil
 			},
 		},
