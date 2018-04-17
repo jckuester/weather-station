@@ -28,13 +28,15 @@ const (
 	// ReceivePrefix is the prefix of raw signals read from the device file of the Arduino.
 	ReceivePrefix = "RF receive "
 
-	PingCmd  = "PING pong"
+	// ResetCmd is resetting the homeduino device to set it in an expected state
 	ResetCmd = "RESET"
 
+	// ResetCmdResponse is the response to ResetCmd homeduiono
 	ResetCmdResponse = "ready"
 )
 
-type ProcessorFunc func(s string)
+// ProcessorFunc are implementations for consuming line by line of the device
+type ProcessorFunc func(s string) bool
 
 // Device represents the device file of an Arduino
 // connected to the USB port.
@@ -44,7 +46,7 @@ type Device struct {
 	open bool
 }
 
-// Open opens the named device file for reading.
+// OpenDevice opens the named device file for reading.
 func OpenDevice(name string) (*Device, error) {
 	file, err := AppFs.OpenFile(name, os.O_RDWR, 0644)
 	if err != nil {
@@ -61,19 +63,20 @@ func OpenDevice(name string) (*Device, error) {
 	return d, nil
 }
 
+// Reset sends ResetCmd to the device to set it in an expected state
 func (d *Device) Reset() error {
 	err := d.Write(ResetCmd)
 	if err != nil {
 		return err
 	}
 
-	ctx, cancel := context.WithCancel(context.Background())
-	err = d.Process(ctx, func(s string) {
-		for !strings.EqualFold(s, ResetCmdResponse){
+	ctx := context.Background()
+	err = d.Process(ctx, func(s string) bool {
+		if !strings.Contains(s, ResetCmdResponse) {
 			log.Printf("Not %v msg: %v\n", ResetCmdResponse, s)
-			return
+			return false
 		}
-		cancel()
+		return true
 	})
 
 	if err != nil && err != context.Canceled {
@@ -83,9 +86,8 @@ func (d *Device) Reset() error {
 	return nil
 }
 
-// ReadProcess reads the next line from a device file in a loop and
-// applies a Processor to it. If the Processor returns false,
-// reading is stopped.
+// Process reads the next line from a device file in a loop and
+// applies a ProcessorFunc to it. The Context is used to stop reading
 // Before ReadProcess can be used the device file needs to be opened via Open.
 func (d *Device) Process(ctx context.Context, handle ProcessorFunc) error {
 	d.Lock()
@@ -99,7 +101,10 @@ func (d *Device) Process(ctx context.Context, handle ProcessorFunc) error {
 		line := scanner.Text()
 		log.Println("Line Scanned:", line)
 
-		handle(line)
+		stop := handle(line)
+		if stop {
+			return nil
+		}
 
 		select {
 		case <-ctx.Done():

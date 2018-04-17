@@ -12,7 +12,8 @@ import (
 
 var deviceFile = "/dev/ttyUSB0"
 
-func MockedProcessor(s string) {
+func MockedProcessor(s string) bool {
+	return false
 }
 
 func TestOpen(t *testing.T) {
@@ -63,17 +64,16 @@ func TestRead(t *testing.T) {
 	m.On("func1", lines[1]).Once()
 
 	d, _ := OpenDevice(deviceFile)
-	ctx, cancel := context.WithCancel(context.Background())
 	counter := 0
-	err := d.Process(ctx, func(s string) {
+	err := d.Process(context.Background(), func(s string) bool {
 		counter++
 		m.Called(s)
 		if counter == 2 {
-			cancel()
+			return true
 		}
-		return
+		return false
 	})
-	assert.EqualError(t, err, context.Canceled.Error())
+	assert.NoError(t, err)
 	m.AssertNumberOfCalls(t, "func1", 2)
 
 }
@@ -90,15 +90,14 @@ func TestRead_stopProcessing(t *testing.T) {
 	m.On("func1", l2).Once()
 
 	d, _ := OpenDevice(deviceFile)
-	ctx, cancel := context.WithCancel(context.Background())
 	counter := 0
-	d.Process(ctx, func(s string) {
+	d.Process(context.Background(), func(s string) bool {
 		counter++
 		m.Called(s)
 		if counter == 2 {
-			cancel()
+			return true
 		}
-		return
+		return false
 	})
 
 	m.AssertExpectations(t)

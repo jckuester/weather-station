@@ -23,8 +23,8 @@ var (
 )
 
 const (
-	SENSOR_ID       = "id"
-	SENSOR_LOCATION = "location"
+	SensorID       = "id"
+	SensorLocation = "location"
 )
 
 func main() {
@@ -36,15 +36,15 @@ func main() {
 		Name: "meter_temperature_celsius",
 		Help: "Current temperature in Celsius",
 	}, []string{
-		SENSOR_ID,
-		SENSOR_LOCATION,
+		SensorID,
+		SensorLocation,
 	})
 	humidity = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "meter_humidity_percent",
 		Help: "Current humidity level in %",
 	}, []string{
-		SENSOR_ID,
-		SENSOR_LOCATION,
+		SensorID,
+		SensorLocation,
 	})
 
 	prometheus.MustRegister(temperature)
@@ -87,7 +87,9 @@ func receive(a *Device) {
 
 // Process decodes a compressed signal read from the Arduino
 // by trying all currently supported protocols.
-func DecodedSignal(line string) {
+func DecodedSignal(line string) (stop bool) {
+	stop = false
+
 	if strings.HasPrefix(line, ReceivePrefix) {
 		trimmed := strings.TrimPrefix(line, ReceivePrefix)
 
@@ -108,13 +110,13 @@ func DecodedSignal(line string) {
 			m := result.(*GTWT01Result)
 			log.Printf("%v: %+v\n", device, *m)
 			temperature.With(prometheus.Labels{
-				SENSOR_ID:       m.Name,
-				SENSOR_LOCATION: sensors[m.Name],
+				SensorID:       m.Name,
+				SensorLocation: sensors[m.Name],
 			}).Set(m.Temperature)
 
 			humidity.With(prometheus.Labels{
-				SENSOR_ID:       m.Name,
-				SENSOR_LOCATION: sensors[m.Name],
+				SensorID:       m.Name,
+				SensorLocation: sensors[m.Name],
 			}).Set(float64(m.Humidity))
 		default:
 			log.Println("Device", device)
