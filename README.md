@@ -5,19 +5,19 @@
     <img alt="Release" src="https://img.shields.io/github/release/jckuester/weather-station.svg?style=flat-square">
   </a>
   <a href="https://github.com/jckuester/weather-station/master">
-    <img alt="Release" src="https://img.shields.io/travis/jckuester/weather-station/master.svg?style=flat-square">
+    <img alt="Travis" src="https://img.shields.io/travis/jckuester/weather-station/master.svg?style=flat-square">
   </a>
   <a href="https://goreportcard.com/report/github.com/jckuester/weather-station">
-    <img src="https://goreportcard.com/badge/github.com/jckuester/weather-station?style=flat-square" />
+    <img alt="Go Report" src="https://goreportcard.com/badge/github.com/jckuester/weather-station?style=flat-square" />
   </a>
   <a href="https://codecov.io/gh/jckuester/weather-station">
-    <img src="https://codecov.io/gh/jckuester/weather-station/branch/master/graph/badge.svg?style=flat-square" />
+    <img alt="Codecov branch" src="https://codecov.io/gh/jckuester/weather-station/branch/master/graph/badge.svg?style=flat-square" />
   </a>
   <a href="https://godoc.org/github.com/jckuester/weather-station">
-    <img src="https://img.shields.io/badge/godoc-reference-blue.svg?style=flat-square"" />
+    <img alt="Go Doc" src="https://img.shields.io/badge/godoc-reference-blue.svg?style=flat-square" />
   </a>
   <a href="https://github.com/jckuester/weather-station/blob/master/LICENSE">
-    <img src="https://img.shields.io/github/license/jckuester/weather-station.svg?style=flat-square" />
+    <img alt="Software License" src="https://img.shields.io/github/license/jckuester/weather-station.svg?style=flat-square" />
   </a>
 </p>
 
