@@ -1,27 +1,25 @@
-// Package pulse decodes a compressed pulse sequence
-// received via the Arduino library https://github.com/pimatic/RFControl.
-//
-// For decoding details see also https://github.com/pimatic/rfcontroljs#details.
 package main
 
 import (
 	"fmt"
-	"github.com/bradfitz/slice"
-	"github.com/pkg/errors"
 	"math"
 	"sort"
 	"strconv"
 	"strings"
+
+	"github.com/bradfitz/slice"
+	"github.com/pkg/errors"
 )
 
 // Signal implements a received 433 MHz signal of compressed raw time series
+// (received via the Arduino library https://github.com/pimatic/RFControl)
 // that consists of pulse lengths and a sequence of pulses.
 type Signal struct {
 	Lengths []int
 	Seq     string
 }
 
-// Pair simply implements a tuple fo two values
+// Pair simply implements a tuple of two values
 // (first, second).
 type Pair struct {
 	first  int
@@ -29,8 +27,9 @@ type Pair struct {
 }
 
 // DecodePulse tries to decode a received Signal
-// based on all currently supported protocols.
-func DecodePulse(s *Signal) (DeviceType, interface{}, error) {
+// based on all currently supported protocols
+// (for decoding details see also https://github.com/pimatic/rfcontroljs#details).
+func DecodePulse(s *Signal) (ProtocolType, interface{}, error) {
 	for _, p := range Protocols() {
 		if matches(s, p) {
 			binary, err := convert(s.Seq, p.Mapping)

@@ -1,5 +1,3 @@
-// Package arduino helps to talk to
-// an Arduino connected via USB (to a Raspberry Pi).
 package main
 
 import (
@@ -9,10 +7,11 @@ import (
 	"os"
 
 	"context"
-	"github.com/pkg/errors"
-	"github.com/spf13/afero"
 	"strings"
 	"sync"
+
+	"github.com/pkg/errors"
+	"github.com/spf13/afero"
 )
 
 var (
@@ -22,20 +21,19 @@ var (
 )
 
 const (
-	// ReceiveCmd is the command that needs to b e sent to the Arduino to start
-	// receiving on Pin 0.
+	// ReceiveCmd is the command to be sent to the Arduino to start receiving (on Pin 0).
 	ReceiveCmd = "RF receive 0"
-	// ReceivePrefix is the prefix of raw signals read from the device file of the Arduino.
+	// ReceivePrefix is the prefix of raw signals read from the Arduino.
 	ReceivePrefix = "RF receive "
-
-	// ResetCmd is resetting the homeduino device to set it in an expected state
+	// ResetCmd resets the Arduino (or better the homeduino software installed on it) into an expected state.
 	ResetCmd = "RESET"
-
-	// ResetCmdResponse is the response to ResetCmd homeduiono
+	// ResetCmdResponse is the response to ResetCmd when resetting is finished.
 	ResetCmdResponse = "ready"
 )
 
-// ProcessorFunc are implementations for consuming line by line of the device
+// ProcessorFunc are implementations that can be applied
+// to each line read from the device file.
+// Let the function return true if otherwise continuous reading should be stopped.
 type ProcessorFunc func(s string) bool
 
 // Device represents the device file of an Arduino
@@ -52,7 +50,7 @@ func OpenDevice(name string) (*Device, error) {
 	if err != nil {
 		return nil, errors.Wrapf(err, "Failed to open '%v'", name)
 	}
-	log.Printf("Device '%v' opened", file.Name())
+	log.Printf("Device '%v' is open", file.Name())
 
 	d := &Device{
 		File:  file,
@@ -64,6 +62,7 @@ func OpenDevice(name string) (*Device, error) {
 }
 
 // Reset sends ResetCmd to the device to set it in an expected state
+// (i.e. waits until a ResetCmdResponse is received).
 func (d *Device) Reset() error {
 	err := d.Write(ResetCmd)
 	if err != nil {
@@ -87,8 +86,7 @@ func (d *Device) Reset() error {
 }
 
 // Process reads the next line from a device file in a loop and
-// applies a ProcessorFunc to it. The Context is used to stop reading
-// Before ReadProcess can be used the device file needs to be opened via Open.
+// applies a ProcessorFunc to it. The Context is used to stop reading.
 func (d *Device) Process(ctx context.Context, handle ProcessorFunc) error {
 	d.Lock()
 	defer d.Unlock()

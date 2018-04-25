@@ -2,12 +2,13 @@ package main
 
 import (
 	"context"
+	"strings"
+	"testing"
+
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
-	"strings"
-	"testing"
 )
 
 var deviceFile = "/dev/ttyUSB0"
@@ -31,6 +32,26 @@ func TestOpen_DeviceNotExist(t *testing.T) {
 	_, err := OpenDevice(deviceFile)
 
 	require.Error(t, err)
+}
+
+//  TODO Reset
+func TestReset(t *testing.T) {
+	l1 := "some line to read and process"
+	l2 := "some other line to read and process"
+	l3 := "this line shouldn't be processed"
+
+	writeFile(deviceFile, l1, l2, l3)
+
+	m := mock.Mock{}
+	m.On("func1", l1).Once()
+	m.On("func1", l2).Once()
+
+	d, _ := OpenDevice(deviceFile)
+	counter := 0
+	d.Reset()
+
+	m.AssertExpectations(t)
+	m.AssertNotCalled(t, "func1", l3)
 }
 
 func TestRead_DeviceNotOpened(t *testing.T) {
