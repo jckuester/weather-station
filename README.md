@@ -1,5 +1,7 @@
-# Weather station
-
+<img alt="Weather Station" src="img/logo_banner.png" />
+ 
+---
+ 
 <p align="right">
   <a href="https://github.com/jckuester/weather-station/releases/latest">
     <img alt="Release" src="https://img.shields.io/github/release/jckuester/weather-station.svg?style=flat-square">
@@ -126,6 +128,8 @@ Here is [my version of the Grafana dashboard](./grafana-dashboard.json) that you
  it as a starting point for customizing yours (of course, sensor IDs need to be adapted accordingly).
 
 ## Credits
+
+* Thanks for contributing the logo, [ssnjrthegr8](https://github.com/ssnjrthegr8).
 
 * Idea and code of this [CO2 Prometheus exporter](https://github.com/larsp/co2monitor)
 has been an inspiration and starting point for this project.
