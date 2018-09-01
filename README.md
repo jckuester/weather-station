@@ -120,7 +120,7 @@ The logs will show all signals that the exporter is able to decode, but nothing 
     ```
 
 2) Write down all the IDs of sensors you'd like export to Prometheus.
-3) Restart the weather station with those IDs (e.g., `./weather-station 2439 2320`)
+3) Restart the weather station with those IDs and give each ID a human-readable label (e.g., `./weather-station 2439=kitchen 2320=piano`)
 
 ## Dashboards
 

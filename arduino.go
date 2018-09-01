@@ -9,10 +9,11 @@ import (
 	"os"
 
 	"context"
-	"github.com/pkg/errors"
-	"github.com/spf13/afero"
 	"strings"
 	"sync"
+
+	"github.com/pkg/errors"
+	"github.com/spf13/afero"
 )
 
 var (

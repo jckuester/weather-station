@@ -6,12 +6,13 @@ package main
 
 import (
 	"fmt"
-	"github.com/bradfitz/slice"
-	"github.com/pkg/errors"
 	"math"
 	"sort"
 	"strconv"
 	"strings"
+
+	"github.com/bradfitz/slice"
+	"github.com/pkg/errors"
 )
 
 // Signal implements a received 433 MHz signal of compressed raw time series

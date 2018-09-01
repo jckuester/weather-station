@@ -2,12 +2,13 @@ package main
 
 import (
 	"context"
+	"strings"
+	"testing"
+
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
-	"strings"
-	"testing"
 )
 
 var deviceFile = "/dev/ttyUSB0"

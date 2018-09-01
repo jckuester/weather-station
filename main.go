@@ -2,20 +2,22 @@ package main
 
 import (
 	"context"
-	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"gopkg.in/alecthomas/kingpin.v2"
 	"log"
 	"net/http"
 	"strings"
+
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"gopkg.in/alecthomas/kingpin.v2"
 )
 
 var (
 	device = kingpin.Flag("device", "Arduino connected to USB").
 		Default("/dev/ttyUSB0").String()
-	listenAddr = kingpin.Flag("listen-address", "The address to listen on for HTTP requests.").
+	listenAddr = kingpin.Flag("listen-address", "The address to listen on for HTTP requests").
 			Default(":8080").String()
-	ids = kingpin.Arg("ids", "Sensor IDs that will be exported").StringMap()
+	ids = kingpin.Arg("id=label ...", "List of all sensor IDs (e.g. 1234=kitchen 2353=piano)"+
+		" that will be exported to prometheus. Each ID must be given a human-readable label.").StringMap()
 
 	temperature     *prometheus.GaugeVec
 	humidity        *prometheus.GaugeVec
