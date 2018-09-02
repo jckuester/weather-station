@@ -25,8 +25,10 @@ var (
 )
 
 const (
-	SensorID       = "id"
-	SensorLocation = "location"
+	sensorID = "id"
+	// sensorLocation is a label name used for prometheus' GaugeVec to partition sensor data by
+	// where the sensor is located (e.g., kitchen, bedroom, outside, etc.)
+	sensorLocation = "location"
 )
 
 func main() {
@@ -38,15 +40,15 @@ func main() {
 		Name: "meter_temperature_celsius",
 		Help: "Current temperature in Celsius",
 	}, []string{
-		SensorID,
-		SensorLocation,
+		sensorID,
+		sensorLocation,
 	})
 	humidity = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "meter_humidity_percent",
 		Help: "Current humidity level in %",
 	}, []string{
-		SensorID,
-		SensorLocation,
+		sensorID,
+		sensorLocation,
 	})
 
 	prometheus.MustRegister(temperature)
@@ -81,15 +83,15 @@ func receive(a *Device) {
 
 	ctx := context.Background()
 	// read and decode received signals forever
-	err = a.Process(ctx, DecodedSignal)
+	err = a.Process(ctx, DecodeSignal)
 	if err != nil {
 		log.Println(err)
 	}
 }
 
-// Process decodes a compressed signal read from the Arduino
+// DecodeSignal decodes a compressed signal read from the Arduino
 // by trying all currently supported protocols.
-func DecodedSignal(line string) (stop bool) {
+func DecodeSignal(line string) (stop bool) {
 	stop = false
 
 	if strings.HasPrefix(line, ReceivePrefix) {
@@ -108,25 +110,26 @@ func DecodedSignal(line string) (stop bool) {
 		}
 
 		switch device {
-		case GT_WT_01:
+		case Weather15:
 			m := result.(*GTWT01Result)
-			log.Printf("%v: %+v\n", device, *m)
-			if loc, ok := sensorLocations[m.Name]; !ok || loc == "" {
+			if loc, ok := sensorLocations[m.ID]; !ok || loc == "" {
+				log.Printf("%v: %+v\n", device, *m)
 				log.Println("Sensor hasn't set a location and won't be provided to Prometheus for monitoring")
 				return
 			}
+			log.Printf("%v(%v): %+v\n", device, sensorLocations[m.ID], *m)
 
 			temperature.With(prometheus.Labels{
-				SensorID:       m.Name,
-				SensorLocation: sensorLocations[m.Name],
+				sensorID:       m.ID,
+				sensorLocation: sensorLocations[m.ID],
 			}).Set(m.Temperature)
 
 			humidity.With(prometheus.Labels{
-				SensorID:       m.Name,
-				SensorLocation: sensorLocations[m.Name],
+				sensorID:       m.ID,
+				sensorLocation: sensorLocations[m.ID],
 			}).Set(float64(m.Humidity))
 		default:
-			log.Println("Device", device)
+			log.Println("Devices", device)
 		}
 	}
 	return
