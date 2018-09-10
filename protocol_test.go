@@ -20,3 +20,18 @@ func TestDecode_weather15(t *testing.T) {
 	assert.Equal(t, 2, m.Channel, "Channel")
 	assert.Equal(t, 2454, m.ID, "Id")
 }
+
+func TestDecode_weather12(t *testing.T) {
+	p, _ := PreparePulse("568 4040 2008 8952 0 0 0 0 0102020102010202020201020202020201010201020202020201010101020201020102010103")
+	bits, _ := convert(p.Seq, Protocols()["protocol1"].Mapping)
+	//bits := "0110101111011111001011111000011010100"
+
+	result, _ := Protocols()["protocol1"].Decode(bits)
+	m := result.(*GTWT01Result)
+
+	assert.Equal(t, 60, m.Humidity, "Humidity")
+	assert.Equal(t, 20.8, m.Temperature, "Temperature")
+	assert.Equal(t, false, m.LowBattery, "LowBattery")
+	assert.Equal(t, 3, m.Channel, "Channel")
+	assert.Equal(t, 148, m.ID, "Id")
+}

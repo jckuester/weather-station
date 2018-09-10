@@ -32,7 +32,7 @@ func Protocols() map[string]*Protocol {
 		// Only one protocol supported right now
 		// (see: https://github.com/pimatic/rfcontroljs/blob/master/src/protocols/weather15.coffee)
 		"protocol1": {
-			Device:    "Globaltronics GT-WT-01 variant",
+			Device:    "Globaltronics GT-WT-01",
 			SeqLength: []int{76},
 			Lengths:   []int{496, 2048, 4068, 8960},
 			Mapping: map[string]string{
@@ -67,6 +67,45 @@ func Protocols() map[string]*Protocol {
 					return nil, err
 				}
 
+				res := &GTWT01Result{
+					ID:          int(id),
+					Name:        fmt.Sprint(id),
+					Channel:     int(channel) + 1,
+					Temperature: float64(temp) / 10,
+					Humidity:    int(humidity),
+					LowBattery:  lowBattery,
+				}
+
+				if res.Temperature > -50 && res.Temperature < 100 && res.Humidity > 0 && res.Humidity < 100 {
+					return res, nil
+				}
+				// Might be "non-variant sensor" trying different bit ranges
+
+				id, err = strconv.ParseUint(binSeq[0:8], 2, 0)
+				if err != nil {
+					return nil, err
+				}
+
+				channel, err = strconv.ParseUint(binSeq[10:12], 2, 0)
+				if err != nil {
+					return nil, err
+				}
+
+				temp, err = strconv.ParseInt(binSeq[12:24], 2, 0)
+				if err != nil {
+					return nil, err
+				}
+
+				humidity, err = strconv.ParseInt(binSeq[24:31], 2, 0)
+				if err != nil {
+					return nil, err
+				}
+
+				lowBattery, err = strconv.ParseBool(string(binSeq[8]))
+				if err != nil {
+					return nil, err
+				}
+
 				return &GTWT01Result{
 					ID:          int(id),
 					Name:        fmt.Sprint(id),
@@ -81,7 +120,7 @@ func Protocols() map[string]*Protocol {
 }
 
 // GTWT01Result is the human-readable result of a decoded pulse
-// for the "GT-WT-01 variant".
+// for the "GT-WT-01".
 type GTWT01Result struct {
 	ID          int
 	Name        string
