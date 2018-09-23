@@ -4,13 +4,13 @@ package main
 
 import "fmt"
 
-const _DeviceType_name = "UnknownGT_WT_01"
+const _DeviceTypeName = "UnknownGT_WT_01"
 
-var _DeviceType_index = [...]uint8{0, 7, 15}
+var _DeviceTypeIndex = [...]uint8{0, 7, 15}
 
 func (i DeviceType) String() string {
-	if i >= DeviceType(len(_DeviceType_index)-1) {
+	if i >= DeviceType(len(_DeviceTypeIndex)-1) {
 		return fmt.Sprintf("DeviceType(%d)", i)
 	}
-	return _DeviceType_name[_DeviceType_index[i]:_DeviceType_index[i+1]]
+	return _DeviceTypeName[_DeviceTypeIndex[i]:_DeviceTypeIndex[i+1]]
 }
