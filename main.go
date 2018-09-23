@@ -25,7 +25,9 @@ var (
 )
 
 const (
-	SensorID       = "id"
+	// SensorID is the (unique) identifier of the sensor
+	SensorID = "id"
+	// SensorLocation is the location given to the sensor
 	SensorLocation = "location"
 )
 
@@ -87,7 +89,7 @@ func receive(a *Device) {
 	}
 }
 
-// Process decodes a compressed signal read from the Arduino
+// DecodedSignal decodes a compressed signal read from the Arduino
 // by trying all currently supported protocols.
 func DecodedSignal(line string) (stop bool) {
 	stop = false
@@ -108,7 +110,7 @@ func DecodedSignal(line string) (stop bool) {
 		}
 
 		switch device {
-		case GT_WT_01:
+		case GtWt01:
 			m := result.(*GTWT01Result)
 			log.Printf("%v: %+v\n", device, *m)
 			if loc, ok := sensorLocations[m.Name]; !ok || loc == "" {

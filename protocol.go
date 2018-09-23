@@ -7,11 +7,14 @@ import (
 
 //go:generate stringer -type DeviceType
 
+// DeviceType is an enum for the device types
 type DeviceType uint8
 
 const (
+	// Unknown describes unknown sensors
 	Unknown DeviceType = iota
-	GT_WT_01
+	// GtWt01 describes the GT_WT_01 sensor and variants
+	GtWt01
 )
 
 // Protocol defines a protocol that can be used to match
@@ -40,7 +43,7 @@ func Protocols() map[string]*Protocol {
 				"02": "1",
 				"03": "",
 			},
-			Type: GT_WT_01,
+			Type: GtWt01,
 			Decode: func(binSeq string) (interface{}, error) {
 				id, err := strconv.ParseUint(binSeq[0:12], 2, 0)
 				if err != nil {
