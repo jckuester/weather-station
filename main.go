@@ -25,7 +25,9 @@ var (
 )
 
 const (
+	// SensorID is the unique identifier of the sensor
 	SensorID       = "id"
+	// SensorLocation is the location where the sensor is placed
 	SensorLocation = "location"
 )
 
@@ -87,7 +89,7 @@ func receive(a *Device) {
 	}
 }
 
-// Process decodes a compressed signal read from the Arduino
+// DecodedSignal decodes a compressed signal read from the Arduino
 // by trying all currently supported protocols.
 func DecodedSignal(line string) (stop bool) {
 	stop = false

@@ -21,7 +21,9 @@ func TestOpen(t *testing.T) {
 	writeFile(deviceFile)
 
 	d, err := OpenDevice(deviceFile)
-	defer d.Close()
+	if err == nil {
+		defer d.Close()
+	}
 
 	require.NoError(t, err)
 }
@@ -69,10 +71,7 @@ func TestRead(t *testing.T) {
 	err := d.Process(context.Background(), func(s string) bool {
 		counter++
 		m.Called(s)
-		if counter == 2 {
-			return true
-		}
-		return false
+		return counter == 2
 	})
 	assert.NoError(t, err)
 	m.AssertNumberOfCalls(t, "func1", 2)
@@ -95,10 +94,7 @@ func TestRead_stopProcessing(t *testing.T) {
 	d.Process(context.Background(), func(s string) bool {
 		counter++
 		m.Called(s)
-		if counter == 2 {
-			return true
-		}
-		return false
+		return counter == 2
 	})
 
 	m.AssertExpectations(t)
