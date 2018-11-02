@@ -14,6 +14,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/spf13/afero"
+	"github.com/tarm/serial"
 )
 
 var (
@@ -45,6 +46,17 @@ type Device struct {
 	afero.File
 	sync.Mutex
 	open bool
+}
+
+func SetupDevice(name string) {
+	log.Println("Setting up serial port to use 115200 baud")
+	c := &serial.Config{Name: name, Baud: 115200}
+	s, err := serial.OpenPort(c)
+	if err != nil {
+		log.Fatal(err)
+	}
+	s.Close()
+	log.Println("Serial port prepared")
 }
 
 // OpenDevice opens the named device file for reading.

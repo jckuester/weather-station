@@ -38,7 +38,7 @@ func main() {
 	setupMetrics()
 
 	http.Handle("/metrics", promhttp.Handler())
-
+	SetupDevice(*device)
 	dev, err := OpenDevice(*device)
 	if err != nil {
 		log.Fatalf("Could not open '%v'", *device)
