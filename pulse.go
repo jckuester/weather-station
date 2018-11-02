@@ -30,19 +30,43 @@ type Pair struct {
 }
 
 // DecodePulse tries to decode a received Signal
-// based on all currently supported protocols.
-func DecodePulse(s *Signal) (DeviceType, interface{}, error) {
-	for _, p := range Protocols() {
+// with the given protocol.
+func DecodePulse(s *Signal, protocol string) (interface{}, error) {
+	p := Protocols()[protocol]
+	if p == nil {
+		return nil, fmt.Errorf("invalid protocol string \"%s\"", protocol)
+	}
+
+	if !matches(s, p) {
+		return nil, fmt.Errorf("received signal does not match protocol \"%s\"", protocol)
+	}
+
+	binary, err := convert(s.Seq, p.Mapping)
+	if err != nil {
+		return nil, err
+	}
+
+	return p.Decode(binary)
+}
+
+// MatchingProtocols tries to decode a received Signal
+// based on all currently supported protocols and returns the matching ones
+func MatchingProtocols(s *Signal) []string {
+	protocols := make([]string, 0)
+	for t, p := range Protocols() {
 		if matches(s, p) {
 			binary, err := convert(s.Seq, p.Mapping)
 			if err != nil {
-				return p.Type, nil, err
+				continue
 			}
-			i, err := p.Decode(binary)
-			return p.Type, i, err
+			_, err = p.Decode(binary)
+			if err != nil {
+				continue
+			}
+			protocols = append(protocols, t)
 		}
 	}
-	return Unknown, nil, nil
+	return protocols
 }
 
 // matches checks whether a received Signal matches
