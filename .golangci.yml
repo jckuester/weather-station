@@ -1,0 +1,6 @@
+linters:
+  enable-all: true
+
+linters-settings:
+  lll:
+    maxlength: 120
