@@ -1,0 +1,8 @@
+# test / sample configuration
+sensors:
+  1235:
+    location: kitchen
+    protocol: weather15
+  91:
+    location: fridge
+    protocol: weather12
