@@ -10,13 +10,15 @@ import (
 )
 
 func TestDefaultConfig(t *testing.T) {
+	vip = viper.New()
+
 	var buf bytes.Buffer
 	log.SetOutput(&buf)
 	defer func() {
 		log.SetOutput(os.Stderr)
 	}()
 
-	loadConfig()
+	loadConfig("")
 
 	assert.Equal(t, len(vip.GetStringMap("sensors")), 0, "Should initialize empty sensor list")
 	assert.Contains(t, buf.String(), "Not Found")
@@ -24,6 +26,8 @@ func TestDefaultConfig(t *testing.T) {
 }
 
 func TestConfigWithSensors(t *testing.T) {
+	vip = viper.New()
+
 	var buf bytes.Buffer
 	log.SetOutput(&buf)
 	defer func() {
@@ -42,7 +46,8 @@ func TestConfigWithSensors(t *testing.T) {
 
 func loadSampleConfig() {
 	vip = viper.New()
-	initConfig()
+
+	initConfig("")
 	vip.SetConfigName("sample-weather-station")
 	readConfig()
 }

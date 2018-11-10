@@ -7,12 +7,16 @@ import (
 
 var vip = viper.New()
 
-func initConfig() {
+func initConfig(configFile string) {
 	vip.SetConfigType("yaml")
-	vip.SetConfigName("weather-station")
-	vip.AddConfigPath("/etc/weather-station/")
-	vip.AddConfigPath("$HOME/.config/weather-station")
-	vip.AddConfigPath(".")
+	if configFile != "" {
+		vip.SetConfigFile(configFile)
+	} else {
+		vip.SetConfigName("weather-station")
+		vip.AddConfigPath("/etc/weather-station/")
+		vip.AddConfigPath("$HOME/.config/weather-station")
+		vip.AddConfigPath(".")
+	}
 	vip.SetDefault("sensors", map[string]string{})
 }
 
@@ -23,8 +27,7 @@ func readConfig() {
 	}
 }
 
-func loadConfig() {
-	vip = viper.New()
-	initConfig()
+func loadConfig(configFile string) {
+	initConfig(configFile)
 	readConfig()
 }

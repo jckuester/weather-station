@@ -17,6 +17,8 @@ var (
 		Default("/dev/ttyUSB0").String()
 	listenAddr = kingpin.Flag("listen-address", "The address to listen on for HTTP requests").
 			Default(":8080").String()
+	configFile = kingpin.Arg("config.yaml", "Path to config file.").String()
+
 	temperature *prometheus.GaugeVec
 	humidity    *prometheus.GaugeVec
 )
@@ -31,7 +33,7 @@ const (
 func main() {
 	kingpin.Parse()
 
-	loadConfig()
+	loadConfig(*configFile)
 
 	setupMetrics()
 
@@ -114,7 +116,7 @@ func DecodedSignal(line string) (stop bool) {
 }
 
 func printAllMatchingProtocols(matchingProtocols []string, pulse *Signal) {
-	log.Println("Sensor has no matching configuration, potential protocols:")
+	firstMatch := true
 	for _, p := range matchingProtocols {
 		result, err := DecodePulse(pulse, p)
 		if err != nil {
@@ -122,9 +124,17 @@ func printAllMatchingProtocols(matchingProtocols []string, pulse *Signal) {
 			continue
 		}
 		m := result.(*GTWT01Result)
+		if firstMatch {
+			log.Println("Sensor has no matching configuration, potential protocols:")
+			firstMatch = false
+		}
 		log.Printf("%v: %+v\n", p, *m)
 	}
-	log.Println("Add to configuration with appropriate protocol")
+	if firstMatch {
+		log.Println("Unsupported protocol or error decoding the pulse")
+	} else {
+		log.Println("Add to configuration with appropriate protocol")
+	}
 }
 
 func processedWithMatchingConfig(matchingProtocols []string, pulse *Signal) bool {
@@ -158,7 +168,7 @@ func processedWithMatchingConfig(matchingProtocols []string, pulse *Signal) bool
 						SensorID:       m.Name,
 						SensorLocation: location,
 					}).Set(float64(m.Humidity))
-					log.Printf("%v: %+v\n", p, *m)
+					log.Printf("%v: %+v\n", location, *m)
 					protocolMatch = true
 					break
 				}
@@ -166,5 +176,6 @@ func processedWithMatchingConfig(matchingProtocols []string, pulse *Signal) bool
 			}
 		}
 	}
+
 	return protocolMatch
 }

@@ -59,5 +59,5 @@ func TestProcessedWithMatchingConfigMatch(t *testing.T) {
 
 	processed := processedWithMatchingConfig([]string{"weather12", "weather15"}, s)
 	assert.True(t, processed)
-	assert.Contains(t, buf.String(), "weather12: {ID:91 Name:91 Channel:1 Temperature:18.7 Humidity:53 LowBattery:false}")
+	assert.Contains(t, buf.String(), "fridge: {ID:91 Name:91 Channel:1 Temperature:18.7 Humidity:53 LowBattery:false}")
 }
