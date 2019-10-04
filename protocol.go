@@ -51,7 +51,7 @@ func Protocols() map[string]*Protocol {
 					return nil, err
 				}
 
-				temp, err := strconv.ParseInt(binSeq[16:28], 2, 0)
+				temp, err := parse12BitSignedInt(binSeq[16:28])
 				if err != nil {
 					return nil, err
 				}
@@ -98,7 +98,7 @@ func Protocols() map[string]*Protocol {
 					return nil, err
 				}
 
-				temp, err := strconv.ParseInt(binSeq[12:24], 2, 0)
+				temp, err := parse12BitSignedInt(binSeq[12:24])
 				if err != nil {
 					return nil, err
 				}
@@ -135,4 +135,15 @@ type GTWT01Result struct {
 	Temperature float64
 	Humidity    int
 	LowBattery  bool
+}
+
+func parse12BitSignedInt(s string) (int64, error) {
+	if s[0] == '1' {
+		v, err := strconv.ParseInt(s, 2, 0)
+		if err != nil {
+			return 0, err
+		}
+		return v - 4096, nil // 2**12
+	}
+	return strconv.ParseInt(s, 2, 0)
 }
