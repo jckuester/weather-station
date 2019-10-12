@@ -2,7 +2,7 @@ builds:
   - binary: weather-station
     goos:
       - windows
-      - darwin
+#     - darwin
       - linux
     goarch:
       - amd64
