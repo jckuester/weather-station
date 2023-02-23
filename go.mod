@@ -21,8 +21,8 @@ require (
 	github.com/stretchr/testify v1.2.2
 	github.com/tarm/serial v0.0.0-20180830185346-98f6abe2eb07
 	go4.org v0.0.0-20180809161055-417644f6feb5 // indirect
-	golang.org/x/net v0.0.0-20181102091132-c10e9556a7bc // indirect
-	golang.org/x/sync v0.0.0-20180314180146-1d60e4601c6f // indirect
+	golang.org/x/sys v0.5.0 // indirect
+	golang.org/x/text v0.7.0 // indirect
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
 )
 
